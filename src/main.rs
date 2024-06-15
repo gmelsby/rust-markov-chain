@@ -4,6 +4,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use rand::seq::SliceRandom;
 
 fn read_lines<P>(file_path: P) -> io::Result<io::Lines<io::BufReader<File>>> 
 where P: AsRef<Path>, {
@@ -26,6 +27,7 @@ fn main() {
 
     let mut ngram_dict: HashMap<(String, String), Vec<String>> =  HashMap::new();
 
+    // build dictionary
     if let Ok(lines) = read_lines(file_path) {
         let mut prior_word = "\n".to_string();
         let mut twice_prior_word = "\n".to_string();
@@ -36,15 +38,54 @@ fn main() {
                 twice_prior_word = prior_word;
                 prior_word = "\n".to_string();
             } else {
-                for word in line.split(" ") {
+                for word in line.split_whitespace() {
                     insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word.to_string());
                     twice_prior_word = prior_word;
                     prior_word = word.to_string();
                 }
-                println!("{}", line);
             }
         }
     }
 
-    println!("{:?}", ngram_dict);
+    let mut prior_words: Vec<String> = Vec::with_capacity(2);
+    prior_words.resize(2, String::new());
+
+    // make binding for borrow checker
+    let binding = ngram_dict
+        .keys()
+        .cloned()
+        .collect::<Vec<(String, String)>>();
+
+    let starting_words = binding.choose(&mut rand::thread_rng());
+    match starting_words {
+        Some((first, second)) => {
+            prior_words[0] = first.clone();
+            prior_words[1] = second.clone();
+            println!("{} {}", first, second);
+        }
+        None => {
+            print!("something went wrong here!");
+            return;
+        }
+    }
+
+    loop {
+        let next_word_candidate = ngram_dict[&(prior_words[0].clone(), prior_words[1].clone())]
+            .choose(&mut rand::thread_rng());
+        let mut next_word = "\n".to_string();
+        match next_word_candidate {
+            Some(word) => {
+                next_word = word.clone();
+            }
+            // pass on None
+            None => {}
+        }
+
+        print!(" {}", next_word);
+
+        prior_words[0] = prior_words[1].clone();
+        prior_words[1] = next_word;
+    }
+
+
 }
