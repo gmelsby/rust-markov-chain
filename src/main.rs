@@ -43,10 +43,19 @@ fn print_n_gram(n_gram: &Vec<String>, format_token: &impl Fn(&String) -> String)
         }
 }
 
+fn push_to_prior_tokens(prior_tokens: &mut Vec<String>, token: String) {
+    let prior_tokens_length = prior_tokens.len();
+        for i in 0..(prior_tokens_length - 1) {
+        prior_tokens[i] = prior_tokens[i+1].clone();
+    }
+    prior_tokens[prior_tokens_length - 1] = token;
+}
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
+    let n_gram_length = 3;
 
     let mut ngram_dict: HashMap<Vec<String>, Vec<String>> =  HashMap::new();
 
@@ -57,15 +66,15 @@ fn main() {
 
     // build dictionary
     if let Ok(lines) = read_lines(file_path) {
-        let mut prior_words: Vec<String> = Vec::with_capacity(2);
-        prior_words.resize(2, "\n".to_string());
+        // start with blank lines
+        let mut prior_tokens: Vec<String> = Vec::with_capacity(n_gram_length);
+        prior_tokens.resize(n_gram_length, "\n".to_string());
         for line in lines.flatten() {
             // if we have a blank line insert newline character
             if line.len() == 0 {
-                insert_into_hash_map(&mut ngram_dict, prior_words.clone(), "\n".to_string());
-                prior_words[0] = prior_words[1].clone();
-                prior_words[1] = "\n".to_string();
-            } else {
+                insert_into_hash_map(&mut ngram_dict, prior_tokens.clone(), "\n".to_string());
+                push_to_prior_tokens(&mut prior_tokens, "\n".to_string());
+           } else {
                 for word in line.split_whitespace() {
                     // check if word is more than one character and end character needs to be split 
                     if word.len() > 1 && word.ends_with(|c| {
@@ -76,14 +85,16 @@ fn main() {
                         }
                         false
                     }) {
-                        insert_into_hash_map(&mut ngram_dict, prior_words.clone(), word[0..word.len()-1].to_string());
-                        insert_into_hash_map(&mut ngram_dict, vec![prior_words[1].clone(), word[0..word.len()-1].to_string()], word[word.len()-1..word.len()].to_string());
-                        prior_words[0] = word[0..word.len()-1].to_string();
-                        prior_words[1] = word[word.len()-1..word.len()].to_string();
+                        let word_body = word[0..word.len()-1].to_string();
+                        insert_into_hash_map(&mut ngram_dict, prior_tokens.clone(), word_body.clone());
+                        push_to_prior_tokens(&mut prior_tokens, word_body.clone());
+
+                        let word_ending = word[word.len()-1..word.len()].to_string();
+                        insert_into_hash_map(&mut ngram_dict, prior_tokens.clone(), word_ending.clone());
+                        push_to_prior_tokens(&mut prior_tokens, word[word.len()-1..word.len()].to_string());
                     } else {
-                        insert_into_hash_map(&mut ngram_dict, prior_words.clone(), word.to_string());
-                        prior_words[0] = prior_words[1].clone();
-                        prior_words[1] = word.to_string();
+                        insert_into_hash_map(&mut ngram_dict, prior_tokens.clone(), word.to_string());
+                        push_to_prior_tokens(&mut prior_tokens, word.to_string());
                     }
                 }
             }
@@ -91,35 +102,32 @@ fn main() {
     }
 
     // start with blank lines
-    let mut prior_words = Vec::with_capacity(2);
-    prior_words.resize(2, "\n".to_string());
+    let mut prior_tokens = Vec::with_capacity(n_gram_length);
+    prior_tokens.resize(n_gram_length, "\n".to_string());
 
-    for _ in 0..100 {
-        let next_word_list = ngram_dict.get(&prior_words);
+    for _ in 0..1000 {
+        let next_token_list = ngram_dict.get(&prior_tokens);
 
-        // if there is no next token, prints 2 newlines and loads a random n-gram into prior_words
-        if next_word_list == None {
+        // if there is no next token, prints 2 newlines and loads a random n-gram into prior_tokens
+        if next_token_list == None {
             println!("\n");
-            prior_words = get_random_n_gram(&ngram_dict).unwrap();
-            print_n_gram(&prior_words, &format_token)
+            prior_tokens = get_random_n_gram(&ngram_dict).unwrap();
+            print_n_gram(&prior_tokens, &format_token)
         }
         
         
-        // choose next word from 
-        let mut next_word = "\n".to_string();
-        let next_word_candidate = next_word_list.unwrap().choose(&mut rand::thread_rng());
-        match next_word_candidate {
-            Some(word) => {
-                next_word = word.clone();
+        // choose next token from 
+        let mut next_token = "\n".to_string();
+        let next_token_candidate = next_token_list.unwrap().choose(&mut rand::thread_rng());
+        match next_token_candidate {
+            Some(token) => {
+                next_token = token.clone();
             }
             // pass on None
             None => {}
         }
 
-        print!("{}", format_token(&prior_words[0]));
-        prior_words[0] = prior_words[1].clone();
-        prior_words[1] = next_word;
+        print!("{}", format_token(&prior_tokens[0]));
+        push_to_prior_tokens(&mut prior_tokens, next_token)
     }
-
-
 }
