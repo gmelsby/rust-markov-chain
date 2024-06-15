@@ -39,9 +39,23 @@ fn main() {
                 prior_word = "\n".to_string();
             } else {
                 for word in line.split_whitespace() {
-                    insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word.to_string());
-                    twice_prior_word = prior_word;
-                    prior_word = word.to_string();
+                    if word.ends_with(|c| {
+                        for symbol in ".,!?".chars() {
+                            if c == symbol {
+                                return true;
+                            }
+                        }
+                        false
+                    }) {
+                        insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word[0..word.len()-1].to_string());
+                        insert_into_hash_map(&mut ngram_dict, prior_word.clone(), word[0..word.len()-1].to_string(), word[word.len()-1..word.len()].to_string());
+                        twice_prior_word = word[0..word.len()-1].to_string();
+                        prior_word = word[word.len()-1..word.len()].to_string();
+                    } else {
+                        insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word.to_string());
+                        twice_prior_word = prior_word;
+                        prior_word = word.to_string();
+                    }
                 }
             }
         }
@@ -107,7 +121,8 @@ fn main() {
             None => {}
         }
 
-        print!(" {}", next_word);
+        // add space in front of word if token is not punctuation
+        print!("{}{}",  if !".,?!".contains(&next_word) {" "} else {""}, next_word);
 
         prior_words[0] = prior_words[1].clone();
         prior_words[1] = next_word;
