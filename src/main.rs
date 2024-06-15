@@ -25,6 +25,25 @@ fn format_token_creator(characters: String) -> impl Fn(&String) -> String {
     move |tk| format!("{}{}",  if !characters.contains(&*tk) {" "} else {""}, *tk)
 }
 
+fn get_random_n_gram(dict: &HashMap<Vec<String>, Vec<String>>) -> Option<Vec<String>>
+{
+    // make binding for borrow checker
+    let binding = dict
+        .keys()
+        .cloned()
+        .collect::<Vec<Vec<String>>>();
+
+    let random_n_gram = binding.choose(&mut rand::thread_rng());
+    random_n_gram.cloned()
+}
+
+fn print_n_gram(n_gram: &Vec<String>, format_token: &impl Fn(&String) -> String) {
+        for token in n_gram {
+            print!("{}", format_token(&token));
+        }
+}
+
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
@@ -71,55 +90,22 @@ fn main() {
         }
     }
 
-    let mut prior_words: Vec<String> = Vec::with_capacity(2);
-    prior_words.resize(2, String::new());
+    let mut prior_words = get_random_n_gram(&ngram_dict).unwrap();
 
-    // make binding for borrow checker
-    let binding = ngram_dict
-        .keys()
-        .cloned()
-        .collect::<Vec<Vec<String>>>();
-
-    let starting_words = binding.choose(&mut rand::thread_rng());
-    match starting_words {
-        Some(key) => {
-            prior_words = key.clone();
-            println!("{}{}", format_token(&prior_words[0]), format_token(&prior_words[1]));
-        }
-        None => {
-            print!("something went wrong here!");
-            return;
-        }
-    }
-
-    loop {
-        let val = ngram_dict.get(&prior_words);
+    for _ in 0..100 {
+        let next_word_list = ngram_dict.get(&prior_words);
 
         // if there is no next token, prints 2 newlines and loads a random n-gram into prior_words
-        if val == None {
-            // make binding for borrow checker
-            let binding = ngram_dict
-                .keys()
-                .cloned()
-                .collect::<Vec<Vec<String>>>();
-
-
-            let starting_words = binding.choose(&mut rand::thread_rng());
-            match starting_words {
-                Some(key) => {
-                        prior_words = key.clone();
-                        println!("{} {}", prior_words[0], prior_words[1]);
-                },
-                None => {
-                    print!("something went wrong here!");
-                    return;
-                }
-            }           
+        if next_word_list == None {
+            println!("\n");
+            prior_words = get_random_n_gram(&ngram_dict).unwrap();
+            print_n_gram(&prior_words, &format_token)
         }
         
         
+        // choose next word from 
         let mut next_word = "\n".to_string();
-        let next_word_candidate = val.unwrap().choose(&mut rand::thread_rng());
+        let next_word_candidate = next_word_list.unwrap().choose(&mut rand::thread_rng());
         match next_word_candidate {
             Some(word) => {
                 next_word = word.clone();
