@@ -90,7 +90,9 @@ fn main() {
         }
     }
 
-    let mut prior_words = get_random_n_gram(&ngram_dict).unwrap();
+    // start with blank lines
+    let mut prior_words = Vec::with_capacity(2);
+    prior_words.resize(2, "\n".to_string());
 
     for _ in 0..100 {
         let next_word_list = ngram_dict.get(&prior_words);
