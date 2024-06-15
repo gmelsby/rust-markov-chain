@@ -20,12 +20,21 @@ fn insert_into_hash_map(dict: &mut HashMap<Vec<String>, Vec<String>>, prior_ngra
     }
 }
 
+// returns a function that adds a space to the front of a token if it is not one of the characters
+fn format_token_creator(characters: String) -> impl Fn(&String) -> String {
+    move |tk| format!("{}{}",  if !characters.contains(&*tk) {" "} else {""}, *tk)
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
 
     let mut ngram_dict: HashMap<Vec<String>, Vec<String>> =  HashMap::new();
+
+    // string of single-character tokens that we want to separate from the end of words
+    // we do not want to add a space before these tokens when printing
+    let no_space_tokens = ".,!?\n";
+    let format_token = format_token_creator(no_space_tokens.to_string());
 
     // build dictionary
     if let Ok(lines) = read_lines(file_path) {
@@ -39,8 +48,9 @@ fn main() {
                 prior_words[1] = "\n".to_string();
             } else {
                 for word in line.split_whitespace() {
-                    if word.ends_with(|c| {
-                        for symbol in ".,!?".chars() {
+                    // check if word is more than one character and end character needs to be split 
+                    if word.len() > 1 && word.ends_with(|c| {
+                        for symbol in no_space_tokens.chars() {
                             if c == symbol {
                                 return true;
                             }
@@ -74,7 +84,7 @@ fn main() {
     match starting_words {
         Some(key) => {
             prior_words = key.clone();
-            println!("{} {}", prior_words[0], prior_words[1]);
+            println!("{}{}", format_token(&prior_words[0]), format_token(&prior_words[1]));
         }
         None => {
             print!("something went wrong here!");
@@ -118,9 +128,7 @@ fn main() {
             None => {}
         }
 
-        // add space in front of word if token is not punctuation
-        print!("{}{}",  if !".,?!".contains(&next_word) {" "} else {""}, next_word);
-
+        print!("{}", format_token(&prior_words[0]));
         prior_words[0] = prior_words[1].clone();
         prior_words[1] = next_word;
     }
