@@ -13,8 +13,8 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-fn insert_into_hash_map(dict: &mut HashMap<(String, String), Vec<String>>, twice_prior: String, prior: String, current: String) {
-    match dict.entry((twice_prior, prior)) {
+fn insert_into_hash_map(dict: &mut HashMap<Vec<String>, Vec<String>>, prior_ngram: Vec<String>, current: String) {
+    match dict.entry(prior_ngram) {
         Entry::Vacant(e) => { e.insert(vec![current]); },
         Entry::Occupied(mut e) => { e.get_mut().push(current); }
     }
@@ -25,18 +25,18 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let file_path = &args[1];
 
-    let mut ngram_dict: HashMap<(String, String), Vec<String>> =  HashMap::new();
+    let mut ngram_dict: HashMap<Vec<String>, Vec<String>> =  HashMap::new();
 
     // build dictionary
     if let Ok(lines) = read_lines(file_path) {
-        let mut prior_word = "\n".to_string();
-        let mut twice_prior_word = "\n".to_string();
+        let mut prior_words: Vec<String> = Vec::with_capacity(2);
+        prior_words.resize(2, "\n".to_string());
         for line in lines.flatten() {
             // if we have a blank line insert newline character
             if line.len() == 0 {
-                insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), "\n".to_string());
-                twice_prior_word = prior_word;
-                prior_word = "\n".to_string();
+                insert_into_hash_map(&mut ngram_dict, prior_words.clone(), "\n".to_string());
+                prior_words[0] = prior_words[1].clone();
+                prior_words[1] = "\n".to_string();
             } else {
                 for word in line.split_whitespace() {
                     if word.ends_with(|c| {
@@ -47,14 +47,14 @@ fn main() {
                         }
                         false
                     }) {
-                        insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word[0..word.len()-1].to_string());
-                        insert_into_hash_map(&mut ngram_dict, prior_word.clone(), word[0..word.len()-1].to_string(), word[word.len()-1..word.len()].to_string());
-                        twice_prior_word = word[0..word.len()-1].to_string();
-                        prior_word = word[word.len()-1..word.len()].to_string();
+                        insert_into_hash_map(&mut ngram_dict, prior_words.clone(), word[0..word.len()-1].to_string());
+                        insert_into_hash_map(&mut ngram_dict, vec![prior_words[1].clone(), word[0..word.len()-1].to_string()], word[word.len()-1..word.len()].to_string());
+                        prior_words[0] = word[0..word.len()-1].to_string();
+                        prior_words[1] = word[word.len()-1..word.len()].to_string();
                     } else {
-                        insert_into_hash_map(&mut ngram_dict, twice_prior_word.clone(), prior_word.clone(), word.to_string());
-                        twice_prior_word = prior_word;
-                        prior_word = word.to_string();
+                        insert_into_hash_map(&mut ngram_dict, prior_words.clone(), word.to_string());
+                        prior_words[0] = prior_words[1].clone();
+                        prior_words[1] = word.to_string();
                     }
                 }
             }
@@ -68,14 +68,13 @@ fn main() {
     let binding = ngram_dict
         .keys()
         .cloned()
-        .collect::<Vec<(String, String)>>();
+        .collect::<Vec<Vec<String>>>();
 
     let starting_words = binding.choose(&mut rand::thread_rng());
     match starting_words {
-        Some((first, second)) => {
-            prior_words[0] = first.clone();
-            prior_words[1] = second.clone();
-            println!("{} {}", first, second);
+        Some(key) => {
+            prior_words = key.clone();
+            println!("{} {}", prior_words[0], prior_words[1]);
         }
         None => {
             print!("something went wrong here!");
@@ -84,7 +83,7 @@ fn main() {
     }
 
     loop {
-        let val = ngram_dict.get(&(prior_words[0].clone(), prior_words[1].clone()));
+        let val = ngram_dict.get(&prior_words);
 
         // if there is no next token, prints 2 newlines and loads a random n-gram into prior_words
         if val == None {
@@ -92,17 +91,15 @@ fn main() {
             let binding = ngram_dict
                 .keys()
                 .cloned()
-                .collect::<Vec<(String, String)>>();
+                .collect::<Vec<Vec<String>>>();
 
 
             let starting_words = binding.choose(&mut rand::thread_rng());
             match starting_words {
-                Some((first, second)) => {
-                    prior_words[0] = first.clone();
-                    prior_words[1] = second.clone();
-                    println!("\n\n{} {}", first, second);
-                    continue
-                }
+                Some(key) => {
+                        prior_words = key.clone();
+                        println!("{} {}", prior_words[0], prior_words[1]);
+                },
                 None => {
                     print!("something went wrong here!");
                     return;
