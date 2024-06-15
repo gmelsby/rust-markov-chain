@@ -70,9 +70,35 @@ fn main() {
     }
 
     loop {
-        let next_word_candidate = ngram_dict[&(prior_words[0].clone(), prior_words[1].clone())]
-            .choose(&mut rand::thread_rng());
+        let val = ngram_dict.get(&(prior_words[0].clone(), prior_words[1].clone()));
+
+        // if there is no next token, prints 2 newlines and loads a random n-gram into prior_words
+        if val == None {
+            // make binding for borrow checker
+            let binding = ngram_dict
+                .keys()
+                .cloned()
+                .collect::<Vec<(String, String)>>();
+
+
+            let starting_words = binding.choose(&mut rand::thread_rng());
+            match starting_words {
+                Some((first, second)) => {
+                    prior_words[0] = first.clone();
+                    prior_words[1] = second.clone();
+                    println!("\n\n{} {}", first, second);
+                    continue
+                }
+                None => {
+                    print!("something went wrong here!");
+                    return;
+                }
+            }           
+        }
+        
+        
         let mut next_word = "\n".to_string();
+        let next_word_candidate = val.unwrap().choose(&mut rand::thread_rng());
         match next_word_candidate {
             Some(word) => {
                 next_word = word.clone();
