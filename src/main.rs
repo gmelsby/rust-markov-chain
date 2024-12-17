@@ -69,9 +69,17 @@ fn main() {
     // if we have a 2nd CLI argument use that for n-gram length, defaults to 3
     let n_gram_length = args
         .get(2)
-        .and_then(|arg| arg.parse().ok())
-        .map(|n| if (2..=4).contains(&n) { n } else { 3 })
-        .unwrap_or(3);
+        .map(|x| x.parse())
+        .unwrap_or(Ok(3))
+        .map_err(|_| "Invalid 2nd argument -- n-gram length must be a number")
+        .and_then(|n| {
+            if (2..=4).contains(&n) {
+                Ok(n)
+            } else {
+                Err("Invalid 2nd argument -- n-gram length must be between 2 and 4")
+            }
+        })
+        .unwrap();
 
     let mut ngram_dict: HashMap<Vec<String>, Vec<String>> = HashMap::new();
 
