@@ -63,8 +63,7 @@ fn push_to_prior_tokens(prior_tokens: &mut Vec<String>, token: String) {
     prior_tokens[prior_tokens_length - 1] = token;
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+fn parse_args(args: &Vec<String>) -> (&str, usize) {
     let file_path = &args[1];
     // if we have a 2nd CLI argument use that for n-gram length, defaults to 3
     let n_gram_length = args
@@ -81,6 +80,12 @@ fn main() {
         })
         .unwrap();
 
+    return (file_path, n_gram_length);
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let (file_path, n_gram_length) = parse_args(&args);
     let mut ngram_dict: HashMap<Vec<String>, Vec<String>> = HashMap::new();
 
     // string of single-character tokens that we want to separate from the end of words
