@@ -63,29 +63,45 @@ fn push_to_prior_tokens(prior_tokens: &mut Vec<String>, token: String) {
     prior_tokens[prior_tokens_length - 1] = token;
 }
 
-fn parse_args(args: &Vec<String>) -> (&str, usize) {
+fn parse_args(args: &Vec<String>) -> (&str, usize, usize) {
     let file_path = &args[1];
-    // if we have a 2nd CLI argument use that for n-gram length, defaults to 3
-    let n_gram_length = args
+
+    // if we have a 2nd CLI argument use that for output length, defaults to 1000
+    let output_length = args
         .get(2)
         .map(|x| x.parse())
-        .unwrap_or(Ok(3))
-        .map_err(|_| "Invalid 2nd argument -- n-gram length must be a number")
+        .unwrap_or(Ok(1000))
+        .map_err(|_| "Invalid 2nd argument -- output length must be a number")
         .and_then(|n| {
-            if (2..=4).contains(&n) {
+            if (1..=10000).contains(&n) {
                 Ok(n)
             } else {
-                Err("Invalid 2nd argument -- n-gram length must be between 2 and 4")
+                Err("Invalid 2nd argument -- output length must be between 1 and 10000")
             }
         })
         .unwrap();
 
-    return (file_path, n_gram_length);
+    // if we have a 3rd CLI argument use that for n-gram length, defaults to 3
+    let n_gram_length = args
+        .get(3)
+        .map(|x| x.parse())
+        .unwrap_or(Ok(3))
+        .map_err(|_| "Invalid 3rd argument -- n-gram length must be a number")
+        .and_then(|n| {
+            if (2..=4).contains(&n) {
+                Ok(n)
+            } else {
+                Err("Invalid 3rd argument -- n-gram length must be between 2 and 4")
+            }
+        })
+        .unwrap();
+
+    return (file_path, output_length, n_gram_length);
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let (file_path, n_gram_length) = parse_args(&args);
+    let (file_path, output_length, n_gram_length) = parse_args(&args);
     let mut ngram_dict: HashMap<Vec<String>, Vec<String>> = HashMap::new();
 
     // string of single-character tokens that we want to separate from the end of words
@@ -151,7 +167,7 @@ fn main() {
     let mut prior_tokens = Vec::with_capacity(n_gram_length);
     prior_tokens.resize(n_gram_length, "\n".to_string());
 
-    for _ in 0..1000 {
+    for _ in 0..output_length {
         let next_token_list = ngram_dict.get(&prior_tokens);
 
         // if there is no next token, prints 2 newlines and loads a random n-gram into prior_tokens
