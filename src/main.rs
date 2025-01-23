@@ -75,14 +75,14 @@ fn main() {
     }
 
     println!("\nSaving Chain to file...");
-    match markov_chain.save_chain("output.txt") {
+    match markov_chain.save_chain("output.bin") {
         Ok(()) => {}
         Err(e) => println!("Error: {}", e),
     }
 
     println!("\nLoading Chain from file...");
     let mut chain2 = MarkovChain::new(n_gram_length);
-    match chain2.load_chain("output.txt") {
+    match chain2.load_chain("output.bin") {
         Ok(()) => {}
         Err(e) => println!("Error: {}", e),
     }
