@@ -166,6 +166,30 @@ impl MarkovChain {
         Ok(())
     }
 
+    pub fn load_chain<P: AsRef<Path>>(&mut self, path: P) -> Result<(), std::io::Error> {
+        // Read file
+        let mut f = File::open(path)?;
+        let mut buf: Vec<u8> = Vec::new();
+        match f.read_to_end(&mut buf) {
+            Ok(_) => {}
+            Err(e) => return Err(e),
+        }
+
+        let new_chain: MarkovChain = from_bytes(&buf).unwrap();
+        // Check that chain length is the same
+        if new_chain.ngram_length != self.ngram_length {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "improper ngram length",
+            ));
+        }
+
+        // ToDo -- Merge new chain with existing chain instead of replacing
+        self.ngram_distribution = new_chain.ngram_distribution;
+
+        Ok(())
+    }
+
     // Clears and resets the current ngram to be all newlines
     pub fn clear_current_ngram(&mut self) {
         self.current_ngram.clear();

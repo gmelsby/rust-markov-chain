@@ -74,8 +74,28 @@ fn main() {
         }
     }
 
+    println!("\nSaving Chain to file...");
     match markov_chain.save_chain("output.txt") {
         Ok(()) => {}
         Err(e) => println!("Error: {}", e),
+    }
+
+    println!("\nLoading Chain from file...");
+    let mut chain2 = MarkovChain::new(n_gram_length);
+    match chain2.load_chain("output.txt") {
+        Ok(()) => {}
+        Err(e) => println!("Error: {}", e),
+    }
+
+    println!("Chain loaded... generating more output\n");
+    for _ in 0..output_length {
+        let next_token = chain2.peek_next_token();
+
+        match chain2.put_next_token(&next_token) {
+            Ok(tk) => {
+                print!("{}", tk);
+            }
+            Err(_) => {}
+        }
     }
 }
