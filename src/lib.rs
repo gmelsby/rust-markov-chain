@@ -4,7 +4,7 @@ use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{Error, Read, Write};
 use std::path::Path;
 
 use std::collections::hash_map::Entry;
@@ -266,5 +266,59 @@ impl MarkovChain {
         // Push token to current ngram
         Self::push_to_prior_tokens(&mut self.current_ngram, token.clone());
         return Ok(Self::format_token(token));
+    }
+}
+
+// Keeps track of which integers correspond with which tokens
+struct TokenDict {
+    int_to_string: Vec<String>,
+    string_to_int: HashMap<String, usize>,
+}
+
+impl TokenDict {
+    pub fn new() -> TokenDict {
+        TokenDict {
+            int_to_string: Vec::new(),
+            string_to_int: HashMap::new(),
+        }
+    }
+
+    // Adds String token to TokenDict if not already in, either way returns corresponding int
+    pub fn add_token(&mut self, tk: &String) -> usize {
+        match self.string_to_int.get(tk) {
+            // Return index
+            Some(key) => return *key,
+            None => {
+                // Add String to Vec
+                self.int_to_string.push(tk.to_string());
+                // Get index int
+                let new_index = self.int_to_string.len() - 1;
+                // Add index to HashMap
+                self.string_to_int.insert(tk.to_string(), new_index);
+                return new_index;
+            }
+        }
+    }
+
+    // Returns corresponding string if exists, error if not
+    pub fn get_string_from_int(self, idx: usize) -> Result<String, std::io::Error> {
+        match self.int_to_string.get(idx) {
+            Some(str) => Ok(str.to_string()),
+            None => Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No corresponding string exists",
+            )),
+        }
+    }
+
+    // Returns corresponding int if exists, error if not
+    pub fn get_int_from_string(self, tk: &String) -> Result<usize, std::io::Error> {
+        match self.string_to_int.get(tk) {
+            Some(int) => Ok(*int),
+            None => Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No corresponding int exists",
+            )),
+        }
     }
 }
