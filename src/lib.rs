@@ -1,4 +1,12 @@
+extern crate serde;
+
+use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::{Read, Write};
+use std::path::Path;
+
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::io::{self, Lines};
@@ -6,6 +14,7 @@ use std::io::{self, Lines};
 // Characters that should not have a space inserted before
 const NO_SPACE_TOKENS: &str = ".,!?\n";
 
+#[derive(Serialize, Deserialize)]
 pub struct MarkovChain {
     ngram_length: usize,
     ngram_distribution: HashMap<Vec<String>, Vec<(String, f32)>>,
@@ -146,6 +155,15 @@ impl MarkovChain {
                 }
             }
         }
+    }
+
+    // Stores the MarkovChain in a serialized postcard format
+    pub fn save_chain<P: AsRef<Path>>(&self, path: P) -> Result<(), std::io::Error> {
+        let mut f = File::create(path)?;
+        let buf =
+            to_stdvec(&self).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        f.write_all(&buf[..])?;
+        Ok(())
     }
 
     // Clears and resets the current ngram to be all newlines

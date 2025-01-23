@@ -73,4 +73,9 @@ fn main() {
             Err(_) => {}
         }
     }
+
+    match markov_chain.save_chain("output.txt") {
+        Ok(()) => {}
+        Err(e) => println!("Error: {}", e),
+    }
 }
