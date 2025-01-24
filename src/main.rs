@@ -64,7 +64,7 @@ fn main() {
 
     // Loop to generate and display tokens
     for _ in 0..output_length {
-        let next_token = markov_chain.peek_next_token();
+        let next_token = markov_chain.peek_next_tokens(1)[0].clone();
 
         match markov_chain.put_next_token(&next_token) {
             Ok(tk) => {
@@ -89,11 +89,11 @@ fn main() {
 
     println!("Chain loaded... generating more output\n");
     for _ in 0..output_length {
-        let next_token = chain2.peek_next_token();
+        let next_tokens = chain2.peek_next_tokens(5).clone();
 
-        match chain2.put_next_token(&next_token) {
+        match chain2.put_next_token(&next_tokens[0]) {
             Ok(tk) => {
-                print!("{}", tk);
+                println!("{} {:?}", tk, next_tokens);
             }
             Err(_) => {}
         }

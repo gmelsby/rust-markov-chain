@@ -234,34 +234,37 @@ impl MarkovChain {
             .expect("Newline does not exist in token_dict");
     }
 
-    // Returns a possible next token in the Markov chain
-    pub fn peek_next_token(&mut self) -> String {
+    // Returns a Vec of possible next tokens in the Markov chain
+    pub fn peek_next_tokens(&mut self, count: usize) -> Vec<String> {
         let next_token_distribution = self.ngram_distribution.get(&self.current_ngram);
 
-        let mut next_token = self.get_newline_token();
+        let mut next_tokens = Vec::with_capacity(self.ngram_length);
+        next_tokens.resize(self.ngram_length, "\n".to_string());
+
         let mut rng = thread_rng();
         // Check that next_token_list is not None
         match next_token_distribution {
             Some(token_distribution) => {
-                let next_token_entry =
-                    token_distribution.choose_weighted(&mut rng, |entry| entry.1);
-                // Check that next_token_candidate is not None
-                match next_token_entry {
-                    Ok(token_entry) => {
-                        next_token = token_entry.0;
-                    }
-                    // pass on None (case where list is empty)
-                    Err(_) => {}
+                let next_token_entries = token_distribution
+                    .choose_multiple_weighted(&mut rng, count, |entry| entry.1)
+                    .unwrap()
+                    .collect::<Vec<_>>();
+                // Map int tokens to their corresponding strings
+                if !next_token_entries.is_empty() {
+                    next_tokens = next_token_entries
+                        .iter()
+                        .map(|(tk, _)| {
+                            self.token_dict
+                                .convert_int_to_string(*tk)
+                                .expect("Error converting token int to string")
+                        })
+                        .collect();
                 }
             }
-            // pass on None (case where list is empty)
             None => {}
         }
         // TODO: gracefully handle no next token
-        return self
-            .token_dict
-            .convert_int_to_string(next_token)
-            .expect("No next token exists");
+        next_tokens
     }
 
     // Adds a space to the front of a token if it is not one of the special characters
