@@ -75,25 +75,24 @@ fn main() {
     }
 
     println!("\nSaving Chain to file...");
-    match markov_chain.save_chain("output.bin") {
+    match markov_chain.save_chain("output2.bin") {
         Ok(()) => {}
         Err(e) => println!("Error: {}", e),
     }
 
-    println!("\nLoading Chain from file...");
-    let mut chain2 = MarkovChain::new(n_gram_length);
-    match chain2.load_chain("output.bin") {
+    println!("\nMerging Chain from file...");
+    match markov_chain.merge_chain("output.bin", 0.5) {
         Ok(()) => {}
         Err(e) => println!("Error: {}", e),
     }
 
     println!("Chain loaded... generating more output\n");
     for _ in 0..output_length {
-        let next_tokens = chain2.peek_next_tokens(5).clone();
+        let next_tokens = markov_chain.peek_next_tokens(5).clone();
 
-        match chain2.put_next_token(&next_tokens[0]) {
+        match markov_chain.put_next_token(&next_tokens[0]) {
             Ok(tk) => {
-                println!("{} {:?}", tk, next_tokens);
+                print!("{}", tk);
             }
             Err(_) => {}
         }

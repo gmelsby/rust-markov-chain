@@ -207,6 +207,62 @@ impl MarkovChain {
         Ok(())
     }
 
+    // Merges MarkovChain from ChainEncoding in a serialized postcard format with probabilities modified by weight
+    pub fn merge_chain<P: AsRef<Path>>(
+        &mut self,
+        path: P,
+        scale: f32,
+    ) -> Result<(), std::io::Error> {
+        // Read file
+        let mut f = File::open(path)?;
+        let mut buf: Vec<u8> = Vec::new();
+        match f.read_to_end(&mut buf) {
+            Ok(_) => {}
+            Err(e) => return Err(e),
+        }
+
+        let new_chain_encoding: ChainEncoding = from_bytes(&buf).unwrap();
+        // Check that chain length is the same
+        if new_chain_encoding.ngram_length != self.ngram_length {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "improper ngram length",
+            ));
+        }
+
+        let new_chain = Self::generate_chain_from_encoding(&new_chain_encoding);
+        // Make map to hold mapping from new_chain token int values to current chain token int values
+        let mut tk_int_map: HashMap<usize, usize> = HashMap::new();
+        // Merge token dicts by adding every token in new_chain and keeping track of map of int values from new_chain to main chain
+        for (tk_int, tk) in new_chain.token_dict.int_to_string.iter().enumerate() {
+            let main_tk_int = self.token_dict.add_token(tk);
+            tk_int_map.insert(tk_int, main_tk_int);
+        }
+
+        // Merge token distributions
+        for (new_ngram, new_distribution_entry) in new_chain.ngram_distribution.iter() {
+            let translated_ngram: Vec<usize> = new_ngram.iter().map(|tk| tk_int_map[tk]).collect();
+            // Looks up corresponding ngram in the main distribution and creates entry if none exists
+            let main_distribution_entry = self
+                .ngram_distribution
+                .entry(translated_ngram)
+                .or_insert_with(Vec::new);
+
+            for (new_tk, new_probability) in new_distribution_entry {
+                let translated_tk = tk_int_map[new_tk];
+                match main_distribution_entry
+                    .iter_mut()
+                    .find(|(tk, _)| *tk == translated_tk)
+                {
+                    Some((_, p)) => *p += scale * new_probability,
+                    None => main_distribution_entry.push((translated_tk, scale * new_probability)),
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn generate_chain_from_encoding(encoding: &ChainEncoding) -> MarkovChain {
         let mut new_chain = Self::new(encoding.ngram_length);
         // Set up token_dict from encoded list
