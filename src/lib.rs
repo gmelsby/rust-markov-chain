@@ -3,9 +3,7 @@ extern crate serde;
 use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
 use std::io::{Error, Read, Write};
-use std::path::Path;
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -168,7 +166,7 @@ impl MarkovChain {
     }
 
     // Stores the MarkovChain as a ChainEncoding in a serialized postcard format
-    pub fn save_chain<P: AsRef<Path>>(&self, path: P) -> Result<(), std::io::Error> {
+    pub fn save_chain<W: Write>(&self, mut writer: W) -> Result<(), std::io::Error> {
         // Create ChainEncoding with relevant info
         let encoding = ChainEncoding {
             ngram_length: self.ngram_length,
@@ -176,10 +174,9 @@ impl MarkovChain {
             ngram_distribution: self.ngram_distribution.clone(),
         };
 
-        let mut f = File::create(path)?;
         let buf =
             to_stdvec(&encoding).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        f.write_all(&buf[..])?;
+        writer.write_all(&buf[..])?;
         Ok(())
     }
 

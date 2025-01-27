@@ -75,8 +75,11 @@ fn main() {
     }
 
     println!("\nSaving Chain to file...");
-    match markov_chain.save_chain("output2.bin") {
-        Ok(()) => {}
+    match File::create("output2.bin") {
+        Ok(write_file) => match markov_chain.save_chain(write_file) {
+            Ok(()) => {}
+            Err(e) => println!("Error: {}", e),
+        },
         Err(e) => println!("Error: {}", e),
     }
 
