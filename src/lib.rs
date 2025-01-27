@@ -4,12 +4,12 @@ use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{Error, Read, Write};
 use std::path::Path;
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::io::{self, Lines};
+use std::io::{self};
 
 // Characters that should not have a space inserted before
 const NO_SPACE_TOKENS: &str = ".,!?\n";
@@ -70,7 +70,10 @@ impl MarkovChain {
         prior_tokens[prior_tokens_length - 1] = token;
     }
 
-    pub fn load_lines(&mut self, lines: Lines<std::io::BufReader<std::fs::File>>) {
+    pub fn load_lines<I>(&mut self, lines: I)
+    where
+        I: IntoIterator<Item = Result<String, Error>>,
+    {
         // Creates dictionary that maps from ngram to list of following tokens
         let mut ngram_dict: HashMap<Vec<usize>, Vec<usize>> = HashMap::new();
         // Set prior tokens the start of the text to be newlines
@@ -79,7 +82,7 @@ impl MarkovChain {
 
         prior_tokens.resize(self.ngram_length, newline_token);
 
-        for line in lines.flatten() {
+        for line in lines.into_iter().flatten() {
             if line.len() == 0 {
                 // If we have a blank line insert newline character
                 Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
