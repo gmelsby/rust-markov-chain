@@ -81,11 +81,13 @@ fn main() {
     }
 
     println!("\nMerging Chain from file...");
-    match markov_chain.merge_chain("output.bin", 0.5) {
-        Ok(()) => {}
+    match File::open("output.bin") {
+        Ok(merge_file) => match markov_chain.merge_chain(merge_file, 0.5) {
+            Ok(()) => {}
+            Err(e) => println!("Error: {}", e),
+        },
         Err(e) => println!("Error: {}", e),
-    }
-
+    };
     println!("Chain loaded... generating more output\n");
     for _ in 0..output_length {
         let next_tokens = markov_chain.peek_next_tokens(5).clone();

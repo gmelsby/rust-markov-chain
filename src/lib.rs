@@ -184,14 +184,10 @@ impl MarkovChain {
     }
 
     // Loads MarkovChain from ChainEncoding in a serialized postcard format
-    pub fn load_chain<P: AsRef<Path>>(&mut self, path: P) -> Result<(), std::io::Error> {
+    pub fn load_chain<R: Read>(&mut self, mut reader: R) -> Result<(), std::io::Error> {
         // Read file
-        let mut f = File::open(path)?;
         let mut buf: Vec<u8> = Vec::new();
-        match f.read_to_end(&mut buf) {
-            Ok(_) => {}
-            Err(e) => return Err(e),
-        }
+        reader.read_to_end(&mut buf)?;
 
         let new_chain_encoding: ChainEncoding = from_bytes(&buf).unwrap();
         // Check that chain length is the same
@@ -202,7 +198,6 @@ impl MarkovChain {
             ));
         }
 
-        // TODO -- Merge new chain with existing chain instead of replacing
         let new_chain = Self::generate_chain_from_encoding(&new_chain_encoding);
         self.token_dict = new_chain.token_dict;
         self.ngram_distribution = new_chain.ngram_distribution;
@@ -211,18 +206,14 @@ impl MarkovChain {
     }
 
     // Merges MarkovChain from ChainEncoding in a serialized postcard format with probabilities modified by weight
-    pub fn merge_chain<P: AsRef<Path>>(
+    pub fn merge_chain<R: Read>(
         &mut self,
-        path: P,
+        mut reader: R,
         scale: f32,
     ) -> Result<(), std::io::Error> {
-        // Read file
-        let mut f = File::open(path)?;
+        // Read into buffer
         let mut buf: Vec<u8> = Vec::new();
-        match f.read_to_end(&mut buf) {
-            Ok(_) => {}
-            Err(e) => return Err(e),
-        }
+        reader.read_to_end(&mut buf)?;
 
         let new_chain_encoding: ChainEncoding = from_bytes(&buf).unwrap();
         // Check that chain length is the same
