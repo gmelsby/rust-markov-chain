@@ -13,42 +13,6 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn parse_args(args: &Vec<String>) -> (&str, usize, usize) {
-    let file_path = &args[1];
-
-    // if we have a 2nd CLI argument use that for output length, defaults to 1000
-    let output_length = args
-        .get(2)
-        .map(|x| x.parse())
-        .unwrap_or(Ok(1000))
-        .map_err(|_| "Invalid 2nd argument -- output length must be a number")
-        .and_then(|n| {
-            if (1..=10000).contains(&n) {
-                Ok(n)
-            } else {
-                Err("Invalid 2nd argument -- output length must be between 1 and 10000")
-            }
-        })
-        .unwrap();
-
-    // if we have a 3rd CLI argument use that for n-gram length, defaults to 3
-    let n_gram_length = args
-        .get(3)
-        .map(|x| x.parse())
-        .unwrap_or(Ok(3))
-        .map_err(|_| "Invalid 3rd argument -- n-gram length must be a number")
-        .and_then(|n| {
-            if (2..=4).contains(&n) {
-                Ok(n)
-            } else {
-                Err("Invalid 3rd argument -- n-gram length must be between 2 and 4")
-            }
-        })
-        .unwrap();
-
-    return (file_path, output_length, n_gram_length);
-}
-
 fn create(args: &Vec<String>) {
     // Parse arguments
     let file_path = Path::new(&args[0]);
@@ -98,28 +62,54 @@ fn create(args: &Vec<String>) {
     }
 }
 
-fn run(args: &Vec<String>) {
-    println!("\nMerging Chain from file...");
-    /*
-       match File::open("output.bin") {
-           Ok(merge_file) => match markov_chain.merge_chain(merge_file, 0.5) {
-               Ok(()) => {}
-               Err(e) => println!("Error: {}", e),
-           },
-           Err(e) => println!("Error: {}", e),
-       };
-       println!("Chain loaded... generating more output\n");
-       for _ in 0..output_length {
-           let next_tokens = markov_chain.peek_next_tokens(5).clone();
+fn run(args: &Vec<String>) -> Result<(), std::io::Error> {
+    let ngram_length = Path::new(&args[0])
+        .parent()
+        .and_then(|p| p.components().last())
+        .unwrap()
+        .as_os_str()
+        .to_str()
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap();
+    let mut markov_chain = MarkovChain::new(ngram_length);
+    for chunk in args.chunks(2) {
+        println!("Loading {}", chunk[0]);
+        if let [path, weight] = chunk {
+            match weight.parse::<f32>() {
+                Ok(weight_float) => match File::open(path) {
+                    Ok(merge_file) => match markov_chain.merge_chain(merge_file, weight_float) {
+                        Ok(()) => {}
+                        Err(e) => return Err(e),
+                    },
+                    Err(e) => return Err(e),
+                },
+                Err(_) => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "Could not parse float",
+                    ))
+                }
+            }
+        } else {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Could not parse arguents into chunks",
+            ));
+        }
+    }
 
-           match markov_chain.put_next_token(&next_tokens[0]) {
-               Ok(tk) => {
-                   print!("{}", tk);
-               }
-               Err(_) => {}
-           }
-       }
-    */
+    println!("Chain loaded... generating output\n");
+    for _ in 0..1000 {
+        let next_tokens = markov_chain.peek_next_tokens(1).clone();
+
+        match markov_chain.put_next_token(&next_tokens[0]) {
+            Ok(tk) => {
+                print!("{}", tk);
+            }
+            Err(_) => {}
+        }
+    }
+    Ok(())
 }
 
 fn main() {
@@ -127,7 +117,10 @@ fn main() {
     match args.get(1) {
         Some(command) => match command.as_str() {
             "create" => create(&args[2..].to_vec()),
-            "run" => run(&args[2..].to_vec()),
+            "run" => match run(&args[2..].to_vec()) {
+                Ok(_) => {}
+                Err(e) => println!("Error: {}", e),
+            },
             _ => println!("Error: Command does not exist"),
         },
         None => println!("Error: No command found"),
