@@ -49,10 +49,23 @@ fn parse_args(args: &Vec<String>) -> (&str, usize, usize) {
     return (file_path, output_length, n_gram_length);
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let (file_path, output_length, n_gram_length) = parse_args(&args);
-    let mut markov_chain = MarkovChain::new(n_gram_length);
+fn create(args: &Vec<String>) {
+    // Parse arguments
+    let file_path = &args[0];
+    let ngram_length = args
+        .get(1)
+        .map(|x| x.parse())
+        .unwrap()
+        .map_err(|_| "Invalid 2nd argument -- n-gram length must be a number")
+        .and_then(|n| {
+            if (2..=4).contains(&n) {
+                Ok(n)
+            } else {
+                Err("Invalid 3rd argument -- n-gram length must be between 2 and 4")
+            }
+        })
+        .unwrap();
+    let mut markov_chain = MarkovChain::new(ngram_length);
 
     // Read lines into Markov Chain
     if let Ok(lines) = read_lines(file_path) {
@@ -60,18 +73,6 @@ fn main() {
     } else {
         println!("Error reading file");
         return;
-    }
-
-    // Loop to generate and display tokens
-    for _ in 0..output_length {
-        let next_token = markov_chain.peek_next_tokens(1)[0].clone();
-
-        match markov_chain.put_next_token(&next_token) {
-            Ok(tk) => {
-                print!("{}", tk);
-            }
-            Err(_) => {}
-        }
     }
 
     println!("\nSaving Chain to file...");
@@ -82,24 +83,17 @@ fn main() {
         },
         Err(e) => println!("Error: {}", e),
     }
+}
 
-    println!("\nMerging Chain from file...");
-    match File::open("output.bin") {
-        Ok(merge_file) => match markov_chain.merge_chain(merge_file, 0.5) {
-            Ok(()) => {}
-            Err(e) => println!("Error: {}", e),
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    match args.get(1) {
+        Some(command) => match command.as_str() {
+            "create" => create(&args[2..].to_vec()),
+            "run" => println!("Goodbye"),
+            "step" => println!("Aloha"),
+            _ => println!("Error: Command does not exist"),
         },
-        Err(e) => println!("Error: {}", e),
-    };
-    println!("Chain loaded... generating more output\n");
-    for _ in 0..output_length {
-        let next_tokens = markov_chain.peek_next_tokens(5).clone();
-
-        match markov_chain.put_next_token(&next_tokens[0]) {
-            Ok(tk) => {
-                print!("{}", tk);
-            }
-            Err(_) => {}
-        }
+        None => println!("Error: No command found"),
     }
 }

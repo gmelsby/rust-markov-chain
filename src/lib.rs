@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::io::{self};
 
 // Characters that should not have a space inserted before
-const NO_SPACE_TOKENS: &str = ".,!?;\n";
+const NO_SPACE_TOKENS: &str = ":.,!?;\n";
 
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]
