@@ -280,7 +280,7 @@ impl MarkovChain {
     }
 
     // Returns a Vec of possible next tokens in the Markov chain
-    pub fn peek_next_tokens(&mut self, count: usize) -> Vec<String> {
+    pub fn peek_next_tokens(&self, count: usize) -> Vec<String> {
         let next_token_distribution = self.ngram_distribution.get(&self.current_ngram);
 
         let mut next_tokens = Vec::with_capacity(self.ngram_length);
