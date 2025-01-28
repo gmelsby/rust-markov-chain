@@ -1,3 +1,4 @@
 /target
 texts
 *.bin
+/chains
