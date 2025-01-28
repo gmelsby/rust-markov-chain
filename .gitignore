@@ -1,4 +1,5 @@
-/target
+*/target
 texts
 *.bin
-/chains
+*/chains
+markov_chain/Cargo.lock

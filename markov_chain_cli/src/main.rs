@@ -1,4 +1,4 @@
-use rust_markov::MarkovChain;
+use markov_chain::MarkovChain;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;

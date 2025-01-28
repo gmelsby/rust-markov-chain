@@ -1,5 +1,3 @@
-extern crate serde;
-
 use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
