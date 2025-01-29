@@ -109,7 +109,6 @@ impl MarkovChain {
                             false
                         })
                     {
-                        println!("{}", word_string);
                         let word_ending = word_string.pop().unwrap().to_string();
                         tokens.push(word_ending);
                     }
