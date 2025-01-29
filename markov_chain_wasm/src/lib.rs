@@ -69,4 +69,10 @@ impl WasmMarkovChain {
             .seek_next_capital_word()
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
+
+    // Returns true if no elements are in the chain's ngram dictionary
+    #[wasm_bindgen]
+    pub fn is_empty(&self) -> bool {
+        self.chain.get_ngram_count() == 0
+    }
 }
