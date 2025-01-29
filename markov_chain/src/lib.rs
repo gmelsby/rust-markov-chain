@@ -93,11 +93,14 @@ impl MarkovChain {
 
                 Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
             } else {
-                //
+                // Check if word needs to be split
                 for word in line.split_whitespace() {
-                    // Check if word is more than one character and end character needs to be split
-                    if word.len() > 1
-                        && word.ends_with(|c| {
+                    // For storing constituent tokens in reverse order
+                    let mut tokens: Vec<String> = Vec::new();
+                    let mut word_string = word.to_string();
+                    // Loop while word ends with a special token
+                    while !word_string.is_empty()
+                        && word_string.ends_with(|c| {
                             for symbol in NO_SPACE_TOKENS.chars() {
                                 if c == symbol {
                                     return true;
@@ -106,36 +109,22 @@ impl MarkovChain {
                             false
                         })
                     {
-                        // Case where we split word into two tokens
-                        let word_body = word[0..word.len() - 1].to_string();
-                        let word_body_int = self.token_dict.add_token(&word_body);
-                        // Insert converted body of word
-                        Self::insert_into_ngram_dict(
-                            &mut ngram_dict,
-                            prior_tokens.clone(),
-                            word_body_int,
-                        );
-                        Self::push_to_prior_tokens(&mut prior_tokens, word_body_int);
+                        println!("{}", word_string);
+                        let word_ending = word_string.pop().unwrap().to_string();
+                        tokens.push(word_ending);
+                    }
 
-                        // Insert the ending character int as a separate token
-                        let word_ending = word[word.len() - 1..word.len()].to_string();
-                        let word_ending_int = self.token_dict.add_token(&word_ending);
+                    tokens.push(word_string);
 
-                        Self::insert_into_ngram_dict(
-                            &mut ngram_dict,
-                            prior_tokens.clone(),
-                            word_ending_int,
-                        );
-                        Self::push_to_prior_tokens(&mut prior_tokens, word_ending_int);
-                    } else {
+                    for token in tokens.iter().rev() {
                         // Case where we just have one token
-                        let word_int = self.token_dict.add_token(word);
+                        let token_int = self.token_dict.add_token(token);
                         Self::insert_into_ngram_dict(
                             &mut ngram_dict,
                             prior_tokens.clone(),
-                            word_int,
+                            token_int,
                         );
-                        Self::push_to_prior_tokens(&mut prior_tokens, word_int);
+                        Self::push_to_prior_tokens(&mut prior_tokens, token_int);
                     }
                 }
             }
