@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::io::{self};
 
 // Characters that should not have a space inserted before
-const NO_SPACE_TOKENS: &str = ":.,!?;\n";
+const NO_SPACE_TOKENS: &str = ":.,!?;'\n";
 
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]
@@ -257,6 +257,7 @@ impl MarkovChain {
         Ok(())
     }
 
+    // Transforms a ChainEncoding into a full MarkovChain
     fn generate_chain_from_encoding(encoding: &ChainEncoding) -> MarkovChain {
         let mut new_chain = Self::new(encoding.ngram_length);
         // Set up token_dict from encoded list
@@ -365,6 +366,46 @@ impl MarkovChain {
         // Push token to current ngram
         Self::push_to_prior_tokens(&mut self.current_ngram, token_int);
         return Ok(Self::format_token(token));
+    }
+
+    // Finds a capital word further in the current chain and returns it in Result
+    pub fn seek_next_capital_word(&mut self) -> Result<String, io::Error> {
+        for _ in 0..25 {
+            let candidates = self.peek_next_tokens(10);
+            let uppercase_words: Vec<String> = candidates
+                .clone()
+                .into_iter()
+                .filter(|word| word.chars().next().map_or(false, |c| c.is_uppercase()))
+                .collect();
+
+            if uppercase_words.is_empty() {
+                _ = self.put_next_token(&candidates[0]);
+            } else {
+                return self.put_next_token(&uppercase_words[0]);
+            }
+        }
+        Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Could not find a capital word",
+        ))
+    }
+
+    // Loads a random ngram from dict into current_ngram
+    pub fn randomize_current_ngram(&mut self) -> Result<(), io::Error> {
+        match self
+            .ngram_distribution
+            .keys()
+            .choose(&mut rand::thread_rng())
+        {
+            Some(ngram) => {
+                self.current_ngram = ngram.to_vec();
+                Ok(())
+            }
+            None => Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No ngrams in the dictionary",
+            )),
+        }
     }
 }
 

@@ -23,19 +23,21 @@ function App() {
       console.log("loaded chain 2");
       const nextToken = markovChain.peek_next_tokens(5);
       console.log(nextToken);
+      setOutput([markovChain.find_sentence_start()]);
+      console.log(markovChain.peek_next_tokens(5));
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (markovChain) {
-      for (let step = 0; step < 1000; step++) {
-        setOutput(t => {
-          const nextTokens = markovChain.peek_next_tokens(5);
-          console.log(nextTokens);
-          const formattedToken = markovChain.put_next_token(nextTokens[0]);
-          return [...t, formattedToken];
-        });
-      }
+      console.log("generating");
+      const nextTokens = markovChain.peek_next_tokens(5);
+      const formattedToken = markovChain.put_next_token(nextTokens[0]);
+      setOutput(t => {
+        console.log("setting output");
+        console.log(nextTokens);
+        return [...t, formattedToken];
+      });
     }
   };
 
