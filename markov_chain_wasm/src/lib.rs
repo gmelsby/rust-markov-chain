@@ -1,9 +1,14 @@
-use std::io::Cursor;
-
 use markov_chain::MarkovChain;
+use std::io::Cursor;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, Response};
+
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
 
 #[wasm_bindgen]
 pub struct WasmMarkovChain {
@@ -21,6 +26,10 @@ impl WasmMarkovChain {
 
     #[wasm_bindgen]
     pub fn peek_next_tokens(&self, count: usize) -> Vec<String> {
+        log!(
+            "There are {} ngrams in the dict",
+            self.chain.get_ngram_count()
+        );
         self.chain.peek_next_tokens(count)
     }
 
@@ -43,6 +52,7 @@ impl WasmMarkovChain {
         let response: Response = resp_value.dyn_into().unwrap();
         let array_buf = JsFuture::from(response.array_buffer()?).await?;
         let buf = js_sys::Uint8Array::new(&array_buf).to_vec();
+        log!("Got response of length {}", buf.len());
         let cursor = Cursor::new(buf);
 
         self.chain

@@ -4,3 +4,5 @@ texts
 */chains
 markov_chain/Cargo.lock
 */pkg
+*/node_modules
+markov_chain_wasm/www/public/chains
