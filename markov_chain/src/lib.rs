@@ -1,7 +1,10 @@
+use flate2::read::ZlibDecoder;
+use flate2::write::ZlibEncoder;
+use flate2::Compression;
 use postcard::{from_bytes, to_stdvec};
 use rand::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::io::{Error, Read, Write};
+use std::io::{Cursor, Error, Read, Write};
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -177,19 +180,29 @@ impl MarkovChain {
             ngram_distribution: self.ngram_distribution.clone(),
         };
 
-        let buf =
-            to_stdvec(&encoding).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        writer.write_all(&buf[..])?;
+        let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
+        e.write_all(
+            &to_stdvec(&encoding).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?,
+        )?;
+        let compressed_buf = e.finish().unwrap();
+        writer.write_all(&compressed_buf[..])?;
         Ok(())
     }
 
-    // Loads MarkovChain from ChainEncoding in a serialized postcard format
-    pub fn load_chain<R: Read>(&mut self, mut reader: R) -> Result<(), std::io::Error> {
-        // Read file
+    fn read_chain_from_reader<R: Read>(mut reader: R) -> Result<ChainEncoding, std::io::Error> {
+        // Read from reader
         let mut buf: Vec<u8> = Vec::new();
         reader.read_to_end(&mut buf)?;
+        let mut decoder = ZlibDecoder::new(Cursor::new(buf));
+        let mut decomprssed_buf = Vec::new();
+        decoder.read_to_end(&mut decomprssed_buf)?;
 
-        let new_chain_encoding: ChainEncoding = from_bytes(&buf).unwrap();
+        Ok(from_bytes(&decomprssed_buf).unwrap())
+    }
+
+    // Loads MarkovChain from ChainEncoding in a serialized postcard format
+    pub fn load_chain<R: Read>(&mut self, reader: R) -> Result<(), std::io::Error> {
+        let new_chain_encoding = Self::read_chain_from_reader(reader)?;
         // Check that chain length is the same
         if new_chain_encoding.ngram_length != self.ngram_length {
             return Err(std::io::Error::new(
@@ -206,16 +219,8 @@ impl MarkovChain {
     }
 
     // Merges MarkovChain from ChainEncoding in a serialized postcard format with probabilities modified by weight
-    pub fn merge_chain<R: Read>(
-        &mut self,
-        mut reader: R,
-        scale: f32,
-    ) -> Result<(), std::io::Error> {
-        // Read into buffer
-        let mut buf: Vec<u8> = Vec::new();
-        reader.read_to_end(&mut buf)?;
-
-        let new_chain_encoding: ChainEncoding = from_bytes(&buf).unwrap();
+    pub fn merge_chain<R: Read>(&mut self, reader: R, scale: f32) -> Result<(), std::io::Error> {
+        let new_chain_encoding = Self::read_chain_from_reader(reader)?;
         // Check that chain length is the same
         if new_chain_encoding.ngram_length != self.ngram_length {
             return Err(std::io::Error::new(
