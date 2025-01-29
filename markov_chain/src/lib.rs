@@ -41,6 +41,11 @@ impl MarkovChain {
         }
     }
 
+    // Returns count of how many ngrams are in the ngram_distribution dict
+    pub fn get_ngram_count(&self) -> usize {
+        self.ngram_distribution.len()
+    }
+
     // Inserts appropriate mapping between ngram and current token into HashMap
     fn insert_into_ngram_dict(
         map: &mut HashMap<Vec<usize>, Vec<usize>>,
