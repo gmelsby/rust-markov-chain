@@ -5,6 +5,7 @@ import './App.css'
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
   const [output, setOutput] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     const initializeChain = async () => {
@@ -28,18 +29,43 @@ function App() {
     }
   };
 
-  const handleGenerate = () => {
-    if (markovChain) {
-      console.log("generating");
-      const nextTokens = markovChain.peek_next_tokens(5);
-      const formattedToken = markovChain.put_next_token(nextTokens[0]);
-      setOutput(t => {
-        console.log("setting output");
+  useEffect(() => {
+    let timeoutId: number;
+    const generateTokens = async () => {
+      if (markovChain && !markovChain.is_empty() && generating) {
+        console.log("generating");
+        const nextTokens = markovChain.peek_next_tokens(5);
         console.log(nextTokens);
-        return [...t, formattedToken];
-      });
+        const formattedToken = markovChain.put_next_token(nextTokens[0]);
+        setOutput(t => {
+          console.log("setting output");
+          console.log(nextTokens);
+          return [...t, formattedToken];
+        });
+
+        timeoutId = setTimeout(generateTokens, 100);
+      }
+
     }
-  };
+
+    if (generating) {
+      generateTokens();
+    }
+
+    return () => clearTimeout(timeoutId);
+
+  }, [markovChain, generating]);
+
+
+  const handleStop = () => {
+    setGenerating(false);
+  }
+
+  const handleGenerate = () => {
+    if (markovChain && !markovChain.is_empty()) {
+      setGenerating(true);
+    };
+  }
 
   const handleReset = () => {
     setMarkovChain(new WasmMarkovChain(2));
@@ -52,12 +78,12 @@ function App() {
   return (
     <>
       <h1>Markov Chain</h1>
-      <div className="card">
+      <div>
         <button onClick={() => handleLoadChain()}>
           Click to Load
         </button>
-        <button onClick={() => handleGenerate()}>
-          Click to Generate
+        <button onClick={generating ? handleStop : handleGenerate}>
+          Click to {generating ? 'Stop' : 'Generate'}
         </button>
         <button onClick={() => handleReset()}>
           Click to Reset Chain
@@ -66,12 +92,14 @@ function App() {
           Click to Clear Text
         </button>
 
+      </div>
+      <div className='card'>
         <p>
           {output.join("")}
         </p>
       </div>
+
     </>
   )
 }
-
-export default App
+export default App;
