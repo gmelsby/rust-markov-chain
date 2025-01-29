@@ -61,12 +61,19 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub fn find_sentence_start(&mut self) -> Result<String, JsValue> {
+    pub fn find_sentence_start(&mut self) -> Result<Vec<String>, JsValue> {
         self.chain
             .randomize_current_ngram()
             .map_err(|e| JsValue::from_str(&e.to_string()))?;
         self.chain
             .seek_next_capital_word()
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    #[wasm_bindgen]
+    pub fn load_ngram(&mut self, ngram: Vec<String>) -> Result<(), JsValue> {
+        self.chain
+            .replace_current_ngram(ngram)
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 

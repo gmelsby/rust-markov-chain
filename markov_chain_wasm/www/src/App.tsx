@@ -22,9 +22,18 @@ function App() {
       console.log("loaded chain 1");
       await markovChain.load_chain('/chains/testchain2', 1);
       console.log("loaded chain 2");
-      const nextToken = markovChain.peek_next_tokens(5);
-      console.log(nextToken);
-      setOutput([markovChain.find_sentence_start()]);
+      const sentenceList = markovChain.find_sentence_start();
+      console.log(sentenceList);
+
+      const sentenceListTwo = markovChain.find_sentence_start();
+      console.log(sentenceListTwo);
+
+      markovChain.load_ngram(sentenceList.slice(0, -1));
+      console.log(markovChain.peek_next_tokens(5));
+
+      const fmtToken = markovChain.put_next_token(sentenceList[sentenceList.length - 1]);
+      console.log("put");
+      setOutput(o => [...o, fmtToken]);
       console.log(markovChain.peek_next_tokens(5));
     }
   };

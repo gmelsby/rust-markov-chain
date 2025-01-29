@@ -373,9 +373,9 @@ impl MarkovChain {
         return Ok(Self::format_token(token));
     }
 
-    // Finds a capital word further in the current chain and returns it in Result
-    pub fn seek_next_capital_word(&mut self) -> Result<String, io::Error> {
-        for _ in 0..25 {
+    // Finds a capital word further in the current chain and returns it at the end of its prior ngram in Result
+    pub fn seek_next_capital_word(&mut self) -> Result<Vec<String>, io::Error> {
+        for _ in 0..500 {
             let candidates = self.peek_next_tokens(10);
             let uppercase_words: Vec<String> = candidates
                 .clone()
@@ -386,7 +386,14 @@ impl MarkovChain {
             if uppercase_words.is_empty() {
                 _ = self.put_next_token(&candidates[0]);
             } else {
-                return self.put_next_token(&uppercase_words[0]);
+                let prior_ngram = self.current_ngram.to_vec();
+                let prior_ngram_result: Result<Vec<String>, Error> = prior_ngram
+                    .iter()
+                    .map(|i| self.token_dict.convert_int_to_string(*i))
+                    .collect();
+                let mut prior_ngram_words = prior_ngram_result?;
+                prior_ngram_words.push(uppercase_words[0].to_string());
+                return Ok(prior_ngram_words);
             }
         }
         Err(io::Error::new(
@@ -409,6 +416,31 @@ impl MarkovChain {
             None => Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "No ngrams in the dictionary",
+            )),
+        }
+    }
+
+    // Replaces the current_ngram in self with the int values associated with passed-in ngram
+    pub fn replace_current_ngram(&mut self, ngram: Vec<String>) -> Result<(), io::Error> {
+        let ngram_ints_result: Result<Vec<usize>, io::Error> = ngram
+            .clone()
+            .iter()
+            .map(|tk| {
+                self.token_dict
+                    .convert_string_to_int(&tk.replace(" ", "").to_string())
+            })
+            .collect();
+
+        let ngram_ints = ngram_ints_result?;
+
+        match self.ngram_distribution.get(&ngram_ints) {
+            Some(_) => {
+                self.current_ngram = ngram_ints;
+                Ok(())
+            }
+            None => Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "Ngram not found in the dictionary",
             )),
         }
     }
