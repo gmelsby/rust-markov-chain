@@ -41,8 +41,8 @@ fn create(args: &Vec<String>) {
 
     let file_stem = file_path.file_stem().unwrap();
     let new_path = Path::new("chains")
-        .join(ngram_length.to_string())
-        .join(file_stem);
+        .join(file_stem)
+        .join(ngram_length.to_string());
 
     match fs::create_dir_all(new_path.parent().unwrap()) {
         Ok(_) => {}
