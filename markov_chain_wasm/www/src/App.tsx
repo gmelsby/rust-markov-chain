@@ -18,9 +18,9 @@ function App() {
 
   const handleLoadChain = async () => {
     if (markovChain) {
-      await markovChain.load_chain('/chains/testchain', 1);
+      await markovChain.load_chain(`/chains/${import.meta.env.VITE_CHAIN_1}/2`, 1);
       console.log("loaded chain 1");
-      await markovChain.load_chain('/chains/testchain2', 1);
+      await markovChain.load_chain(`/chains/${import.meta.env.VITE_CHAIN_2}/2`, 1);
       console.log("loaded chain 2");
       const sentenceList = markovChain.find_sentence_start();
       console.log(sentenceList);
@@ -47,8 +47,6 @@ function App() {
         console.log(nextTokens);
         const formattedToken = markovChain.put_next_token(nextTokens[0]);
         setOutput(t => {
-          console.log("setting output");
-          console.log(nextTokens);
           return [...t, formattedToken];
         });
 
@@ -77,7 +75,7 @@ function App() {
   }
 
   const handleReset = () => {
-    setMarkovChain(new WasmMarkovChain(2));
+    setMarkovChain(new WasmMarkovChain(3));
   }
 
   const handleClear = () => {
