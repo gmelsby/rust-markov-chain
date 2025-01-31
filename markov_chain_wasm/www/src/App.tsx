@@ -1,6 +1,132 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import './App.css'
+
+function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
+  {
+    markovChain: WasmMarkovChain | null,
+    ngramLength: number, output: string[],
+    setOutput: React.Dispatch<React.SetStateAction<string[]>>,
+    loaded: boolean,
+  }) {
+
+  const [wordOptions, setWordOptions] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [possibleStarts, setPossibleStarts] = useState<string[][]>([]);
+  const wordOptionsRef = useRef<string[]>(wordOptions);
+
+  const createStarts = useCallback(() => {
+    if (markovChain !== null && !markovChain.is_empty()) {
+      const possibleList: string[][] = [];
+      while (possibleList.length < 5) {
+        const candidate = markovChain.find_sentence_start();
+        console.log(candidate);
+        if (!possibleList.some(o => o[o.length - 1] === candidate[candidate.length - 1])) {
+          possibleList.push(candidate);
+        }
+      }
+      setPossibleStarts(possibleList)
+    }
+  }, [markovChain])
+
+
+  useEffect(() => {
+    if (loaded && markovChain !== null && !markovChain?.is_empty() && output.length == 0) {
+      console.log('loaded')
+      createStarts();
+    }
+  }, [markovChain, loaded, createStarts, output.length]);
+
+  useEffect(() => {
+    if (markovChain && !markovChain.is_empty() && output.length > 0) {
+      setWordOptions(markovChain.peek_next_tokens(5))
+    }
+  }, [markovChain, output]);
+
+  useEffect(() => {
+    wordOptionsRef.current = wordOptions;
+  }, [wordOptions]);
+
+  useEffect(() => {
+    let timeoutId: number;
+    const generateTokens = async () => {
+      if (markovChain && !markovChain.is_empty() && generating) {
+        console.log(wordOptionsRef.current);
+        const formattedToken = markovChain.put_next_token(wordOptionsRef.current[0]);
+        setOutput(t => {
+          return [...t, formattedToken];
+        });
+
+        timeoutId = setTimeout(generateTokens, 50);
+      }
+
+    }
+
+    if (generating) {
+      generateTokens();
+    }
+
+    return () => clearTimeout(timeoutId);
+
+  }, [markovChain, generating, setOutput]);
+
+
+
+  const handleGenerateToggle = () => {
+    if (markovChain && !markovChain.is_empty()) {
+      setGenerating((g: boolean) => !g);
+    }
+  }
+
+  const handleSubmitStart = (startVec: string[]) => {
+    if (markovChain && !markovChain.is_empty()) {
+      markovChain.load_ngram(startVec.slice(0, -1));
+      const formattedTk = markovChain.put_next_token(startVec[startVec.length - 1]);
+      setOutput(o => [...o, formattedTk]);
+    }
+  }
+
+  const handleSubmitToken = (tk: string) => {
+    if (markovChain && !markovChain.is_empty()) {
+      console.log(tk);
+      const formattedTk = markovChain.put_next_token(tk);
+      setOutput(o => [...o, formattedTk]);
+    }
+  }
+
+  const handleBackspace = () => {
+    if (markovChain && !markovChain.is_empty() && output.length > ngramLength) {
+      markovChain.load_ngram(output.slice(-(1 + ngramLength), -1));
+      setOutput(o => o.slice(0, -1));
+    }
+  }
+
+  const handleReset = () => {
+    if (markovChain && !markovChain.is_empty()) {
+      setGenerating(false);
+      setOutput([]);
+      createStarts();
+    }
+  }
+
+  return (
+    <div>
+      {!generating && <div>
+        {output.length === 0 ?
+          possibleStarts.map(startVec => <button onClick={() => handleSubmitStart(startVec)} key={startVec.join('')}>{startVec[startVec.length - 1]}</button>)
+          : wordOptions.map(option =>
+            <button onClick={() => handleSubmitToken(option)} key={option}> {option === '\n' ? '\\n' : option} </button>
+          )}
+      </div>}
+      <div>
+        <button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</button>
+        <button onClick={handleBackspace}>{'<-'}</button>
+        <button onClick={handleReset}>Reset</button>
+      </div>
+    </div>
+  )
+
+}
 
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
@@ -8,7 +134,7 @@ function App() {
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
   const [ngramLength, setNgramLength] = useState(2);
   const [output, setOutput] = useState<string[]>([]);
-  const [generating, setGenerating] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const initializeChain = async () => {
@@ -30,73 +156,15 @@ function App() {
 
   }, []);
 
-
-
   const handleLoadChain = async () => {
     if (markovChain && selectedChains.length > 0) {
       for (const chainObject of selectedChains) {
         await markovChain.load_chain(`/chains/${chainObject.name}/${ngramLength}`, chainObject.weight);
         console.log(`loaded chain ${chainObject.name}`);
       }
-      const sentenceList = markovChain.find_sentence_start();
-      console.log(sentenceList);
-
-      const sentenceListTwo = markovChain.find_sentence_start();
-      console.log(sentenceListTwo);
-
-      markovChain.load_ngram(sentenceList.slice(0, -1));
-      console.log(markovChain.peek_next_tokens(5));
-
-      const fmtToken = markovChain.put_next_token(sentenceList[sentenceList.length - 1]);
-      console.log("put");
-      setOutput(o => [...o, fmtToken]);
-      console.log(markovChain.peek_next_tokens(5));
+      setLoaded(true);
     }
   };
-
-  useEffect(() => {
-    let timeoutId: number;
-    const generateTokens = async () => {
-      if (markovChain && !markovChain.is_empty() && generating) {
-        console.log("generating");
-        const nextTokens = markovChain.peek_next_tokens(5);
-        console.log(nextTokens);
-        const formattedToken = markovChain.put_next_token(nextTokens[0]);
-        setOutput(t => {
-          return [...t, formattedToken];
-        });
-
-        timeoutId = setTimeout(generateTokens, 70);
-      }
-
-    }
-
-    if (generating) {
-      generateTokens();
-    }
-
-    return () => clearTimeout(timeoutId);
-
-  }, [markovChain, generating]);
-
-
-  const handleStop = () => {
-    setGenerating(false);
-  }
-
-  const handleGenerate = () => {
-    if (markovChain && !markovChain.is_empty()) {
-      setGenerating(true);
-    };
-  }
-
-  const handleReset = () => {
-    setMarkovChain(new WasmMarkovChain(3));
-  }
-
-  const handleClear = () => {
-    setOutput([]);
-  }
 
   return (
     <>
@@ -111,15 +179,7 @@ function App() {
         <button onClick={() => handleLoadChain()}>
           Click to Load
         </button>
-        <button onClick={generating ? handleStop : handleGenerate}>
-          Click to {generating ? 'Stop' : 'Generate'}
-        </button>
-        <button onClick={() => handleReset()}>
-          Click to Reset Chain
-        </button>
-        <button onClick={() => handleClear()}>
-          Click to Clear Text
-        </button>
+        <ControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} />
 
       </div>
       <div className='card'>
