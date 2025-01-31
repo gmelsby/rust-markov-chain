@@ -14,6 +14,7 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
   const [generating, setGenerating] = useState(false);
   const [possibleStarts, setPossibleStarts] = useState<string[][]>([]);
   const wordOptionsRef = useRef<string[]>(wordOptions);
+  const outputRef = useRef<string[]>(output);
 
   const createStarts = useCallback(() => {
     if (markovChain !== null && !markovChain.is_empty()) {
@@ -28,6 +29,16 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
       setPossibleStarts(possibleList)
     }
   }, [markovChain])
+
+  const handleSubmitStart = useCallback((startVec: string[]) => {
+    console.log('handling submit start');
+    if (markovChain && !markovChain.is_empty()) {
+      markovChain.load_ngram(startVec.slice(0, -1));
+      const formattedTk = markovChain.put_next_token(startVec[startVec.length - 1]);
+      setOutput(o => [...o, formattedTk]);
+    }
+  }, [markovChain, setOutput]);
+
 
 
   useEffect(() => {
@@ -48,15 +59,23 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
   }, [wordOptions]);
 
   useEffect(() => {
+    outputRef.current = output;
+  }, [output]);
+
+  useEffect(() => {
     let timeoutId: number;
     const generateTokens = async () => {
       if (markovChain && !markovChain.is_empty() && generating) {
-        console.log(wordOptionsRef.current);
-        const formattedToken = markovChain.put_next_token(wordOptionsRef.current[0]);
-        setOutput(t => {
-          return [...t, formattedToken];
-        });
-
+        console.log('generating');
+        if (outputRef.current.length === 0 && possibleStarts.length !== 0) {
+          handleSubmitStart(possibleStarts[0]);
+        } else {
+          console.log(wordOptionsRef.current);
+          const formattedToken = markovChain.put_next_token(wordOptionsRef.current[0]);
+          setOutput(t => {
+            return [...t, formattedToken];
+          });
+        }
         timeoutId = setTimeout(generateTokens, 50);
       }
 
@@ -68,21 +87,13 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
 
     return () => clearTimeout(timeoutId);
 
-  }, [markovChain, generating, setOutput]);
+  }, [markovChain, generating, possibleStarts, setOutput, handleSubmitStart]);
 
 
 
   const handleGenerateToggle = () => {
     if (markovChain && !markovChain.is_empty()) {
       setGenerating((g: boolean) => !g);
-    }
-  }
-
-  const handleSubmitStart = (startVec: string[]) => {
-    if (markovChain && !markovChain.is_empty()) {
-      markovChain.load_ngram(startVec.slice(0, -1));
-      const formattedTk = markovChain.put_next_token(startVec[startVec.length - 1]);
-      setOutput(o => [...o, formattedTk]);
     }
   }
 
