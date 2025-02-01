@@ -86,46 +86,43 @@ impl MarkovChain {
         prior_tokens.resize(self.ngram_length, newline_token);
 
         for line in lines.into_iter().flatten() {
-            if line.len() == 0 {
-                // If we have a blank line insert newline character
-                Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
-
-                Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
-            } else {
-                // Check if word needs to be split
-                for word in line.split_whitespace() {
-                    // For storing constituent tokens in reverse order
-                    let mut tokens: Vec<String> = Vec::new();
-                    let mut word_string = word.to_string();
-                    // Loop while word ends with a special token
-                    while !word_string.is_empty()
-                        && word_string.ends_with(|c| {
-                            for symbol in NO_SPACE_TOKENS.chars() {
-                                if c == symbol {
-                                    return true;
-                                }
+            // Check if word needs to be split
+            for word in line.split_whitespace() {
+                // For storing constituent tokens in reverse order
+                let mut tokens: Vec<String> = Vec::new();
+                let mut word_string = word.to_string();
+                // Loop while word ends with a special token
+                while !word_string.is_empty()
+                    && word_string.ends_with(|c| {
+                        for symbol in NO_SPACE_TOKENS.chars() {
+                            if c == symbol {
+                                return true;
                             }
-                            false
-                        })
-                    {
-                        let word_ending = word_string.pop().unwrap().to_string();
-                        tokens.push(word_ending);
-                    }
+                        }
+                        false
+                    })
+                {
+                    let word_ending = word_string.pop().unwrap().to_string();
+                    tokens.push(word_ending);
+                }
 
-                    tokens.push(word_string);
+                tokens.push(word_string);
 
-                    for token in tokens.iter().rev() {
-                        // Case where we just have one token
-                        let token_int = self.token_dict.add_token(token);
-                        Self::insert_into_ngram_dict(
-                            &mut ngram_dict,
-                            prior_tokens.clone(),
-                            token_int,
-                        );
-                        Self::push_to_prior_tokens(&mut prior_tokens, token_int);
-                    }
+                for token in tokens.iter().rev() {
+                    // Case where we just have one token
+                    let token_int = self.token_dict.add_token(token);
+                    Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), token_int);
+                    Self::push_to_prior_tokens(&mut prior_tokens, token_int);
                 }
             }
+
+            // Add newline on end of line
+            Self::insert_into_ngram_dict(
+                &mut ngram_dict,
+                prior_tokens.clone(),
+                self.get_newline_token(),
+            );
+            Self::push_to_prior_tokens(&mut prior_tokens, self.get_newline_token());
         }
 
         // Convert ngram_dict to normalized probability distribution for ngram_distribution

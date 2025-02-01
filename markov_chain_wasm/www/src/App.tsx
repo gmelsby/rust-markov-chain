@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import './App.css'
 
+const CHOICES = 5;
+
 function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
   {
     markovChain: WasmMarkovChain | null,
@@ -19,14 +21,14 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
   const createStarts = useCallback(() => {
     if (markovChain !== null && !markovChain.is_empty()) {
       const possibleList: string[][] = [];
-      while (possibleList.length < 5) {
+      while (possibleList.length < CHOICES) {
         const candidate = markovChain.find_sentence_start();
         console.log(candidate);
         if (!possibleList.some(o => o[o.length - 1] === candidate[candidate.length - 1])) {
           possibleList.push(candidate);
         }
       }
-      setPossibleStarts(possibleList)
+      setPossibleStarts(possibleList);
     }
   }, [markovChain])
 
@@ -43,14 +45,14 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
 
   useEffect(() => {
     if (loaded && markovChain !== null && !markovChain?.is_empty() && output.length == 0) {
-      console.log('loaded')
+      console.log('loaded');
       createStarts();
     }
   }, [markovChain, loaded, createStarts, output.length]);
 
   useEffect(() => {
     if (markovChain && !markovChain.is_empty() && output.length > 0) {
-      setWordOptions(markovChain.peek_next_tokens(5))
+      setWordOptions(markovChain.peek_next_tokens(CHOICES))
     }
   }, [markovChain, output]);
 
@@ -160,7 +162,7 @@ function App() {
     const fetchChains = async () => {
       const chainResponse = await fetch('chains/');
       const chainObjects = await chainResponse.json();
-      setChainList(chainObjects.map((o: { name: string }) => o.name))
+      setChainList(chainObjects.map((o: { name: string }) => o.name));
     }
 
     fetchChains();
@@ -170,6 +172,7 @@ function App() {
   const handleLoadChain = async () => {
     if (markovChain && selectedChains.length > 0) {
       for (const chainObject of selectedChains) {
+        console.log(selectedChains);
         await markovChain.load_chain(`/chains/${chainObject.name}/${ngramLength}`, chainObject.weight);
         console.log(`loaded chain ${chainObject.name}`);
       }
