@@ -141,7 +141,6 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   const [wordOptions, setWordOptions] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [possibleStarts, setPossibleStarts] = useState<string[][]>([]);
-  const wordOptionsRef = useRef<string[]>(wordOptions);
   const outputRef = useRef<string[]>(output);
 
   const createStarts = useCallback(() => {
@@ -183,10 +182,6 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   }, [markovChain, output]);
 
   useEffect(() => {
-    wordOptionsRef.current = wordOptions;
-  }, [wordOptions]);
-
-  useEffect(() => {
     outputRef.current = output;
   }, [output]);
 
@@ -198,8 +193,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
         if (outputRef.current.length === 0 && possibleStarts.length !== 0) {
           handleSubmitStart(possibleStarts[0]);
         } else {
-          console.log(wordOptionsRef.current);
-          const formattedToken = markovChain.put_next_token(wordOptionsRef.current[0]);
+          const nextToken = markovChain.peek_next_tokens(1);
+          const formattedToken = markovChain.put_next_token(nextToken[0]);
           setOutput(t => {
             return [...t, formattedToken];
           });
