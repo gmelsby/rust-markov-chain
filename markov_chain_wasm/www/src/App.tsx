@@ -4,7 +4,7 @@ import './App.css'
 
 const CHOICES = 5;
 
-function SelectedChainDisplay({ chain, changeWeight, loadedChainList }:
+function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChain }:
   {
     chain:
     {
@@ -13,21 +13,23 @@ function SelectedChainDisplay({ chain, changeWeight, loadedChainList }:
     },
     changeWeight: (newWeight: number) => void;
     loadedChainList: string[],
+    removeChain: () => void;
   }) {
 
   return (
     <div>
+      <button onClick={() => removeChain()}>-</button>
       {chain.name}
       <input
         type="range"
-        min="0.1"
+        min="0.25"
         max="10"
-        step="0.1"
+        step="0.25"
         value={chain.weight}
         onChange={e => changeWeight(Number(e.target.value))}
       />
       {chain.weight}
-      {loadedChainList.includes(chain.name) ? '✅' : '⭕️'}
+      {loadedChainList.includes(chain.name) ? '✅' : null}
     </div>
   );
 
@@ -99,20 +101,34 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     }
   };
 
+  // Removes a chain with passed in name from selectedChains
+  const removeChain = (name: string) => {
+    console.log('removing')
+    setSelectedChains(chains => chains.filter(c => c.name !== name));
+  }
+
   return (
     <div>
-      <button onClick={() => {
-        if (chainOption.length) {
-          setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
-        }
-      }}>
-        Add
-      </button>
-      <select value={chainOption} onChange={e => setChainOption(e.target.value)}> {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}</select >
       <div>{selectedChains.map(c =>
-        <SelectedChainDisplay chain={c} key={c.name} changeWeight={changeChainWeight(c.name)} loadedChainList={loadedChainList} />
+        <SelectedChainDisplay
+          chain={c}
+          key={c.name}
+          changeWeight={changeChainWeight(c.name)}
+          removeChain={() => removeChain(c.name)}
+          loadedChainList={loadedChainList} />
       )}</div>
 
+      {selectedChains.length !== chainList.length && <div>
+        <button onClick={() => {
+          if (chainOption.length) {
+            setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
+          }
+        }}>
+          Add
+        </button>
+        <select value={chainOption} onChange={e => setChainOption(e.target.value)}> {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}</select >
+
+      </div>}
       <select value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
         <option value="2">2</option>
         <option value="3">3</option>
