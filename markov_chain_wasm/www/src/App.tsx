@@ -4,7 +4,7 @@ import './App.css'
 
 const CHOICES = 5;
 
-function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }:
+function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded }:
   {
     setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
     ngramLength: number,
@@ -47,7 +47,6 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       }
       setMarkovChain(newChain);
       setLoaded(true);
-      setOutput([]);
     }
   };
 
@@ -224,6 +223,13 @@ function App() {
 
     initializeChain();
   }, [ngramLength]);
+
+  // When chain is loaded, resets output
+  useEffect(() => {
+    if (loaded) {
+      setOutput([]);
+    }
+  }, [loaded]);
 
   return (
     <>
