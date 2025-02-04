@@ -22,9 +22,9 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
       {chain.name}
       <input
         type="range"
-        min="0.25"
+        min="0.1"
         max="10"
-        step="0.25"
+        step="0.1"
         value={chain.weight}
         onChange={e => changeWeight(Number(e.target.value))}
       />
