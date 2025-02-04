@@ -284,15 +284,6 @@ function App() {
   const [output, setOutput] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const initializeChain = async () => {
-      const chain = new WasmMarkovChain(ngramLength);
-      setMarkovChain(chain);
-    };
-
-    initializeChain();
-  }, [ngramLength]);
-
   // When chain is loaded, resets output
   useEffect(() => {
     if (loaded) {
