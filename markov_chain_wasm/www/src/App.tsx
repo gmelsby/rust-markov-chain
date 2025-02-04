@@ -4,10 +4,79 @@ import './App.css'
 
 const CHOICES = 5;
 
-function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
+function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }:
+  {
+    setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
+    ngramLength: number,
+    setNgramLength: React.Dispatch<React.SetStateAction<number>>,
+    loaded: boolean,
+    setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
+    setOutput: React.Dispatch<React.SetStateAction<string[]>>,
+  }) {
+  const [chainList, setChainList] = useState<string[]>([]);
+  const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
+  const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
+
+  // Fetch list of possible chains
+  useEffect(() => {
+    const fetchChains = async () => {
+      const chainResponse = await fetch('chains/');
+      const chainObjects = await chainResponse.json();
+      setChainList(chainObjects.map((o: { name: string }) => o.name));
+    }
+
+    fetchChains();
+
+  }, []);
+
+  // 
+  useEffect(() => {
+    setLoaded(false);
+    setLoadedChainList([]);
+  }, [selectedChains.length, ngramLength, setLoaded, setLoadedChainList])
+
+
+  const handleLoadChain = async () => {
+    if (selectedChains.length > 0) {
+      const newChain = new WasmMarkovChain(ngramLength);
+      for (const chainObject of selectedChains) {
+        console.log(selectedChains);
+        await newChain.load_chain(`/chains/${chainObject.name}/${ngramLength}`, chainObject.weight);
+        setLoadedChainList(l => [...l, chainObject.name]);
+        console.log(`loaded chain ${chainObject.name}`);
+      }
+      setMarkovChain(newChain);
+      setLoaded(true);
+      setOutput([]);
+    }
+  };
+
+
+
+  return (
+    <div>
+      <h2>{chainList.map(chain => <span onClick={() => setSelectedChains(chains => [...chains, { name: chain, weight: 1 }])} key={chain}>{chain} </span>)}</h2>
+      <h2>{selectedChains.map(c => `${c.name} ${loadedChainList.includes(c.name) ? 'o' : 'x'}`).join(" ")}</h2>
+
+      <select value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+
+      {!loaded && selectedChains.length > 0 && <button onClick={() => handleLoadChain()}>
+        Click to Load
+      </button>}
+
+    </div>
+  )
+
+}
+
+function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
   {
     markovChain: WasmMarkovChain | null,
-    ngramLength: number, output: string[],
+    ngramLength: number,
+    output: string[],
     setOutput: React.Dispatch<React.SetStateAction<string[]>>,
     loaded: boolean,
   }) {
@@ -45,7 +114,7 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
 
   useEffect(() => {
     if (loaded && markovChain !== null && !markovChain?.is_empty() && output.length == 0) {
-      console.log('loaded');
+      console.log('creating starts');
       createStarts();
     }
   }, [markovChain, loaded, createStarts, output.length]);
@@ -143,8 +212,6 @@ function ControlPanel({ markovChain, ngramLength, output, setOutput, loaded }:
 
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
-  const [chainList, setChainList] = useState<string[]>([]);
-  const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
   const [ngramLength, setNgramLength] = useState(2);
   const [output, setOutput] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -158,50 +225,16 @@ function App() {
     initializeChain();
   }, [ngramLength]);
 
-  useEffect(() => {
-    const fetchChains = async () => {
-      const chainResponse = await fetch('chains/');
-      const chainObjects = await chainResponse.json();
-      setChainList(chainObjects.map((o: { name: string }) => o.name));
-    }
-
-    fetchChains();
-
-  }, []);
-
-  const handleLoadChain = async () => {
-    if (markovChain && selectedChains.length > 0) {
-      for (const chainObject of selectedChains) {
-        console.log(selectedChains);
-        await markovChain.load_chain(`/chains/${chainObject.name}/${ngramLength}`, chainObject.weight);
-        console.log(`loaded chain ${chainObject.name}`);
-      }
-      setLoaded(true);
-    }
-  };
-
   return (
     <>
       <h1>Markov Chain</h1>
-      <h2>{chainList.map(chain => <span onClick={() => setSelectedChains(chains => [...chains, { name: chain, weight: 1 }])} key={chain}>{chain} </span>)}</h2>
-      <h2>{selectedChains.map(c => c.name).join(" ")}</h2>
-      <select value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
-        <option value="2">2</option>
-        <option value="3">3</option>
-      </select>
-      <div>
-        <button onClick={() => handleLoadChain()}>
-          Click to Load
-        </button>
-        <ControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} />
-
-      </div>
+      <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} />
       <div className='card'>
         <p>
           {output.join("")}
         </p>
       </div>
-
+      {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} />}
     </>
   )
 }
