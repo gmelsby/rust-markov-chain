@@ -4,6 +4,36 @@ import './App.css'
 
 const CHOICES = 5;
 
+function SelectedChainDisplay({ chain, changeWeight, loadedChainList }:
+  {
+    chain:
+    {
+      name: string,
+      weight: number,
+    },
+    changeWeight: (newWeight: number) => void;
+    loadedChainList: string[],
+  }) {
+
+  return (
+    <div>
+      {chain.name}
+      <input
+        type="range"
+        min="0.1"
+        max="10"
+        step="0.1"
+        value={chain.weight}
+        onChange={e => changeWeight(Number(e.target.value))}
+      />
+      {chain.weight}
+      {loadedChainList.includes(chain.name) ? '✅' : '⭕️'}
+    </div>
+  );
+
+
+}
+
 function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded }:
   {
     setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
@@ -16,6 +46,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   const [chainList, setChainList] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
+  const [chainOption, setChainOption] = useState<string>("");
 
   // Fetch list of possible chains
   useEffect(() => {
@@ -26,10 +57,19 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     }
 
     fetchChains();
-
   }, []);
 
-  // 
+  // Sets the chainOption to the first possible choice
+  useEffect(() => {
+    if (chainList.length) {
+      const possibleChains = chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c));
+      if (possibleChains.length) {
+        setChainOption(possibleChains[0]);
+      }
+    }
+  }, [chainList, chainList.length, selectedChains, selectedChains.length]);
+
+  // Reset loaded status upon change in markov chain specification
   useEffect(() => {
     setLoaded(false);
     setLoadedChainList([]);
@@ -50,23 +90,41 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     }
   };
 
-
+  // Curried function that changes the weight of a selected chain
+  const changeChainWeight = (name: string) => {
+    return (newWeight: number) => {
+      setSelectedChains(chains => chains.map(chain => chain.name === name ? { ...chain, weight: newWeight } : chain));
+      setLoaded(false);
+      setLoadedChainList([]);
+    }
+  };
 
   return (
     <div>
-      <h2>{chainList.map(chain => <span onClick={() => setSelectedChains(chains => [...chains, { name: chain, weight: 1 }])} key={chain}>{chain} </span>)}</h2>
-      <h2>{selectedChains.map(c => `${c.name} ${loadedChainList.includes(c.name) ? 'o' : 'x'}`).join(" ")}</h2>
+      <button onClick={() => {
+        if (chainOption.length) {
+          setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
+        }
+      }}>
+        Add
+      </button>
+      <select value={chainOption} onChange={e => setChainOption(e.target.value)}> {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}</select >
+      <div>{selectedChains.map(c =>
+        <SelectedChainDisplay chain={c} key={c.name} changeWeight={changeChainWeight(c.name)} loadedChainList={loadedChainList} />
+      )}</div>
 
       <select value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
         <option value="2">2</option>
         <option value="3">3</option>
       </select>
 
-      {!loaded && selectedChains.length > 0 && <button onClick={() => handleLoadChain()}>
-        Click to Load
-      </button>}
+      {
+        !loaded && selectedChains.length > 0 && <button onClick={() => handleLoadChain()}>
+          Click to Load
+        </button>
+      }
 
-    </div>
+    </div >
   )
 
 }
