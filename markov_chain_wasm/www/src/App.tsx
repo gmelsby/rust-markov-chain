@@ -43,7 +43,6 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     setNgramLength: React.Dispatch<React.SetStateAction<number>>,
     loaded: boolean,
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
-    setOutput: React.Dispatch<React.SetStateAction<string[]>>,
   }) {
   const [chainList, setChainList] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
@@ -294,7 +293,7 @@ function App() {
   return (
     <>
       <h1>Markov Chain</h1>
-      <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} />
+      <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded }} />
       <div className='card'>
         <p>
           {output.join("")}
