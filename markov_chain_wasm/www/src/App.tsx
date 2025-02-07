@@ -183,6 +183,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
 
 
+  // Creates starts when chain initializes or is reset to 0 length
   useEffect(() => {
     if (loaded && markovChain !== null && !markovChain?.is_empty() && output.length == 0) {
       console.log('creating starts');
@@ -190,12 +191,16 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }, [markovChain, loaded, createStarts, output.length]);
 
+  // Provides new options for the wordOptions list whenever output length changes
+  // While generating is true, skips updating wordOptions because users cannot select them
   useEffect(() => {
-    if (markovChain && !markovChain.is_empty() && output.length > 0) {
-      setWordOptions(markovChain.peek_next_tokens(CHOICES))
+    if (markovChain && !markovChain.is_empty() && output.length > 0 && !generating) {
+      console.log('updating word options');
+      setWordOptions(markovChain.peek_next_tokens(CHOICES));
     }
-  }, [markovChain, output]);
+  }, [markovChain, output, generating]);
 
+  // Keeps outputRef current set to output whenever output changes
   useEffect(() => {
     outputRef.current = output;
   }, [output]);
@@ -278,14 +283,15 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
           : wordOptions.map(option =>
             <button onClick={() => handleSubmitToken(option)} key={option}> {option === '\n' ? '\\n' : option} </button>
           )}
+
+        {wordOptions.length === CHOICES && <button onClick={handleRefresh}>Refresh Options</button>}
       </div>}
       <div>
-        <button onClick={handleRefresh}>Refresh Options</button>
         <button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</button>
         <button onClick={handleBackspace}>{'<-'}</button>
         <button onClick={handleReset}>Reset</button>
       </div>
-    </div>
+    </div >
   )
 
 }
