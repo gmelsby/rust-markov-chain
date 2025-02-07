@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { WasmMarkovChain } from 'markov_chain_wasm';
+import WordButtons from './WordButtons';
+import Button from './Button';
 
 function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices }:
   {
@@ -133,23 +135,34 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }
 
+  // To be passed to WordButtons as prop
+  const wordButtonList = output.length === 0 ?
+    possibleStarts.map(startVec => ({
+      onClick: () => handleSubmitStart(startVec),
+      key: startVec.join(''),
+      content: startVec[startVec.length - 1]
+    }))
+    :
+    wordOptions.map(option => ({
+      onClick: () => handleSubmitToken(option),
+      key: option,
+      content: option === '\n' ? '\\n' : option
+    }));
+
+
+
   return (
     <div>
       {!generating && <div>
-        {output.length === 0 ?
-          possibleStarts.map(startVec => <button onClick={() => handleSubmitStart(startVec)} key={startVec.join('')}>{startVec[startVec.length - 1]}</button>)
-          : wordOptions.map(option =>
-            <button onClick={() => handleSubmitToken(option)} key={option}> {option === '\n' ? '\\n' : option} </button>
-          )}
-
-        {wordOptions.length === choices && <button onClick={handleRefresh}>Refresh Options</button>}
+        <WordButtons buttonList={wordButtonList} />
       </div>}
       <div>
-        <button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</button>
-        <button onClick={handleBackspace}>{'<-'}</button>
-        <button onClick={handleReset}>Reset</button>
+        <Button disabled={wordButtonList.length !== choices} onClick={handleRefresh}>Refresh choices</Button>
+        <Button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</Button>
+        <Button disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
+        <Button onClick={handleReset}>Reset</Button>
       </div>
-    </div >
+    </div>
   )
 
 }

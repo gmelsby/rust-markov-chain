@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
-import './App.css'
 
 const CHOICES = 5;
 const CHAIN_VERSION = 'v1';
@@ -31,7 +30,9 @@ function App() {
           {output.join("")}
         </p>
       </div>
-      {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} choices={CHOICES} />}
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2">
+        {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} choices={CHOICES} />}
+      </div>
     </>
   )
 }
