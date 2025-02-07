@@ -127,14 +127,6 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }
 
-  const handleReset = () => {
-    if (markovChain && !markovChain.is_empty()) {
-      setGenerating(false);
-      setOutput([]);
-      createStarts();
-    }
-  }
-
   // To be passed to WordButtons as prop
   const wordButtonList = output.length === 0 ?
     possibleStarts.map(startVec => ({
@@ -149,18 +141,15 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
       content: option === '\n' ? '\\n' : option
     }));
 
-
-
   return (
-    <div>
-      {!generating && <div>
-        <WordButtons buttonList={wordButtonList} />
-      </div>}
-      <div>
-        <Button disabled={wordButtonList.length !== choices} onClick={handleRefresh}>Refresh choices</Button>
-        <Button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</Button>
+    <div className="flex justify-between flex-wrap">
+      <div className="p-2 flex whitespace-nowrap space-x-1 overflow-x-auto">
+        {!generating && <WordButtons buttonList={wordButtonList} />}
+      </div>
+      <div className="p-2 flex justify-end space-x-1">
+        <Button disabled={wordButtonList.length !== choices} onClick={handleRefresh}>R</Button>
+        <Button onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
         <Button disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
-        <Button onClick={handleReset}>Reset</Button>
       </div>
     </div>
   )

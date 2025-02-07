@@ -1,6 +1,7 @@
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import { useState, useEffect } from 'react';
 import SelectedChainDisplay from './SelectedChainDisplay';
+import Button from './Button';
 
 function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion }:
   {
@@ -45,6 +46,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
 
 
   const handleLoadChain = async () => {
+    setLoaded(false);
     if (selectedChains.length > 0) {
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
@@ -85,26 +87,31 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       )}</div>
 
       {selectedChains.length !== chainList.length && <div>
-        <button onClick={() => {
+        <Button onClick={() => {
           if (chainOption.length) {
             setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
           }
         }}>
-          Add
-        </button>
-        <select value={chainOption} onChange={e => setChainOption(e.target.value)}> {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}</select >
+          +
+        </Button>
+        <select
+          className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
+          value={chainOption}
+          onChange={e => setChainOption(e.target.value)}>
+          {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}
+        </select >
 
       </div>}
-      <select value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+      <select
+        className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
+        value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
         <option value="2">2</option>
         <option value="3">3</option>
       </select>
 
-      {
-        !loaded && selectedChains.length > 0 && <button onClick={() => handleLoadChain()}>
-          Click to Load
-        </button>
-      }
+      {selectedChains.length > 0 && <Button onClick={() => handleLoadChain()}>
+        {loaded ? 'Reset Chain' : 'Click to Load'}
+      </Button>}
 
     </div >
   )

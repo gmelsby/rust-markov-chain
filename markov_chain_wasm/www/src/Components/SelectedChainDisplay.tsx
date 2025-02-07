@@ -1,3 +1,5 @@
+import Button from './Button';
+
 function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChain }:
   {
     chain:
@@ -12,7 +14,7 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
 
   return (
     <div>
-      <button onClick={() => removeChain()}>-</button>
+      <Button onClick={() => removeChain()}>-</Button>
       {chain.name}
       <input
         type="range"
