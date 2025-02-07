@@ -200,6 +200,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     outputRef.current = output;
   }, [output]);
 
+  // Generates tokens when generate is flipped to true
   useEffect(() => {
     let timeoutId: number;
     const generateTokens = async () => {
@@ -228,6 +229,17 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   }, [markovChain, generating, possibleStarts, setOutput, handleSubmitStart]);
 
 
+  // Handler for refreshing token options
+  const handleRefresh = () => {
+    if (!markovChain || markovChain.is_empty()) {
+      return;
+    }
+    if (output.length === 0) {
+      createStarts();
+    } else {
+      setWordOptions(markovChain.peek_next_tokens(CHOICES));
+    }
+  }
 
   const handleGenerateToggle = () => {
     if (markovChain && !markovChain.is_empty()) {
@@ -268,6 +280,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
           )}
       </div>}
       <div>
+        <button onClick={handleRefresh}>Refresh Options</button>
         <button onClick={handleGenerateToggle}>{generating ? 'Stop' : 'Generate'}</button>
         <button onClick={handleBackspace}>{'<-'}</button>
         <button onClick={handleReset}>Reset</button>
