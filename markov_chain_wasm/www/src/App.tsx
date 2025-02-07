@@ -3,6 +3,7 @@ import { WasmMarkovChain } from 'markov_chain_wasm';
 import './App.css'
 
 const CHOICES = 5;
+const CHAIN_VERSION = 'v1';
 
 function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChain }:
   {
@@ -52,7 +53,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   // Fetch list of possible chains
   useEffect(() => {
     const fetchChains = async () => {
-      const chainResponse = await fetch('chains/');
+      const chainResponse = await fetch(`chains/${CHAIN_VERSION}/`);
       const chainObjects = await chainResponse.json();
       setChainList(chainObjects.map((o: { name: string }) => o.name));
     }
@@ -82,7 +83,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
         console.log(selectedChains);
-        await newChain.load_chain(`/chains/${chainObject.name}/${ngramLength}`, chainObject.weight);
+        await newChain.load_chain(`/chains/${CHAIN_VERSION}/${chainObject.name}/${ngramLength}`, chainObject.weight);
         setLoadedChainList(l => [...l, chainObject.name]);
         console.log(`loaded chain ${chainObject.name}`);
       }
