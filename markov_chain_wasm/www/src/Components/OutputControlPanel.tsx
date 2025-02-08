@@ -22,7 +22,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     if (markovChain !== null && !markovChain.is_empty()) {
       const possibleList: string[][] = [];
       while (possibleList.length < choices) {
-        const candidate = markovChain.find_sentence_start();
+        const candidate = markovChain.find_paragraph_start();
         console.log(candidate);
         if (!possibleList.some(o => o[o.length - 1] === candidate[candidate.length - 1])) {
           possibleList.push(candidate);

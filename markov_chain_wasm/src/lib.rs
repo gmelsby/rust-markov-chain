@@ -61,12 +61,13 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub fn find_sentence_start(&mut self) -> Result<Vec<String>, JsValue> {
+    pub fn find_paragraph_start(&mut self) -> Result<Vec<String>, JsValue> {
         self.chain
             .randomize_current_ngram()
             .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        log!("randomized");
         self.chain
-            .seek_next_capital_word()
+            .seek_next_word_after_newline()
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 

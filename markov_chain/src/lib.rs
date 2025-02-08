@@ -408,32 +408,42 @@ impl MarkovChain {
         return Ok(self.format_token(token));
     }
 
-    // Seeks a capital word further in the current chain and returns it at the end of its prior ngram in Result
-    pub fn seek_next_capital_word(&mut self) -> Result<Vec<String>, io::Error> {
-        for _ in 0..500 {
-            let candidates = self.peek_next_tokens(10);
-            let uppercase_words: Vec<String> = candidates
-                .clone()
-                .into_iter()
-                .filter(|word| word.chars().next().map_or(false, |c| c.is_uppercase()))
-                .collect();
+    // Seeks a words after newlines further in the current chain and returns it at the end of its prior ngram in Result
+    pub fn seek_next_word_after_newline(&mut self) -> Result<Vec<String>, io::Error> {
+        let newline_token = self.get_newline_token();
+        for _ in 0..1000 {
+            // Look at next possible tokens
+            let candidates = self.peek_next_tokens(15);
 
-            if uppercase_words.is_empty() {
-                _ = self.put_next_token(&candidates[0]);
-            } else {
-                let prior_ngram = self.current_ngram.to_vec();
-                let prior_ngram_result: Result<Vec<String>, Error> = prior_ngram
+            let non_newline_candidates: Vec<String> =
+                candidates.iter().filter(|&c| *c != "\n").cloned().collect();
+
+            // If last token was a newline and we have a non-newline candidate, return prior ngram + a non-newline candidate
+            if !non_newline_candidates.is_empty()
+                && self.current_ngram.last().cloned().unwrap() == newline_token
+            {
+                let prior_ngram_result: Result<Vec<String>, Error> = self
+                    .current_ngram
+                    .to_vec()
                     .iter()
                     .map(|i| self.token_dict.convert_int_to_string(*i))
                     .collect();
                 let mut prior_ngram_words = prior_ngram_result?;
-                prior_ngram_words.push(uppercase_words[0].to_string());
+                prior_ngram_words.push(non_newline_candidates[0].to_string());
                 return Ok(prior_ngram_words);
+            }
+
+            // If last token was not a newline but there is a newline in the candidates, move chain forward with newline
+            if candidates.len() != non_newline_candidates.len() {
+                _ = self.put_next_token(&"\n".to_string());
+            } else {
+                // Otherwise move chain forward with arbitrary token
+                _ = self.put_next_token(&candidates[0]);
             }
         }
         Err(io::Error::new(
             io::ErrorKind::NotFound,
-            "Could not find a capital word",
+            "Could not find a word after newline",
         ))
     }
 
