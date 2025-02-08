@@ -106,10 +106,13 @@ impl MarkovChain {
                     tokens.push(word_ending);
                 }
 
-                tokens.push(word_string);
+                // check that word_string is not empty before pushing
+                if !word_string.is_empty() {
+                    tokens.push(word_string);
+                }
 
+                // Insert all tokens that made up our string
                 for token in tokens.iter().rev() {
-                    // Case where we just have one token
                     let token_int = self.token_dict.add_token(token);
                     Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), token_int);
                     Self::push_to_prior_tokens(&mut prior_tokens, token_int);
