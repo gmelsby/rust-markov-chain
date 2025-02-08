@@ -148,12 +148,18 @@ impl MarkovChain {
             }
 
             // Add newline on end of line
+            Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
+            Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+        }
+
+        // Pad end of text with newlines so at worst case it will wrap around to the start of text
+        for _ in 0..self.ngram_length {
             Self::insert_into_ngram_dict(
                 &mut ngram_dict,
                 prior_tokens.clone(),
                 self.get_newline_token(),
             );
-            Self::push_to_prior_tokens(&mut prior_tokens, self.get_newline_token());
+            Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
         }
 
         // Convert ngram_dict to normalized probability distribution for ngram_distribution
