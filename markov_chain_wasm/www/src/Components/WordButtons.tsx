@@ -86,7 +86,7 @@ function WordButtons({ buttonList }:
     <div ref={horizontalScrollRef} onMouseDown={handleMouseDown} className={`p-2 whitespace-nowrap space-x-1 overflow-x-auto hide-scrollbar ${dragging ? 'cursor-grabbing' : overflowing ? 'cursor-grab' : ''}`}>
       {
         buttonList.map(({ content, onClick, key }) =>
-          <Button key={key} {...{ onClick }}>{content}</Button>
+          <Button key={key} {...{ onClick }} onLongPress={() => { }}>{content}</Button>
         )
       }
     </div>
