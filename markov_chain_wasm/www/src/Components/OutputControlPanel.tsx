@@ -148,7 +148,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
         <Button size='sm' onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
         <Button size='sm' disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
       </div>
-      <div className="p-2 whitespace-nowrap space-x-1 overflow-x-auto bg-neutral-700 xl:rounded-tr-2xl hide-scrollbar">
+      <div className="bg-neutral-700 xl:rounded-tr-2xl">
         {!generating && <WordButtons buttonList={wordButtonList} />}
       </div>
     </>
