@@ -99,7 +99,7 @@ impl MarkovChain {
                 // Loop while word ends with a special token
                 while !word_string.is_empty()
                     && word_string.ends_with(|c| {
-                        for symbol in NO_SPACE_BEFORE_TOKENS.chars() {
+                        for symbol in NO_SPACE_BEFORE_TOKENS.chars().chain(QUOTES.chars()) {
                             if c == symbol {
                                 return true;
                             }
@@ -116,7 +116,7 @@ impl MarkovChain {
                 // Loop while word starts with a special token
                 while !word_string.is_empty()
                     && word_string.starts_with(|c| {
-                        for symbol in NO_SPACE_AFTER_TOKENS.chars() {
+                        for symbol in NO_SPACE_AFTER_TOKENS.chars().chain(QUOTES.chars()) {
                             if c == symbol {
                                 return true;
                             }
@@ -351,18 +351,26 @@ impl MarkovChain {
             .unwrap_or_default();
         // Left space quotes already have a space before them
         let left_space_quotes: Vec<String> = QUOTES.chars().map(|c| format!(" {}", c)).collect();
-        return format!(
-            "{}{}",
-            if NO_SPACE_BEFORE_TOKENS.contains(token)
-                || left_space_quotes.contains(token)
-                || NO_SPACE_AFTER_TOKENS.contains(last_token_str.as_str())
-            {
-                ""
-            } else {
-                " "
-            },
+
+        let space = if NO_SPACE_BEFORE_TOKENS.contains(token)
+            || QUOTES.contains(token)
+            || left_space_quotes.contains(token)
+            || NO_SPACE_AFTER_TOKENS.contains(last_token_str.as_str())
+            || left_space_quotes.contains(&last_token_str)
+        {
+            ""
+        } else {
+            " "
+        };
+
+        // Special case where we have a left-space quote after a new-line
+        let special_case_token = if left_space_quotes.contains(token) && last_token_str == "\n" {
+            token.trim()
+        } else {
             token
-        );
+        };
+
+        format!("{}{}", space, special_case_token)
     }
 
     // Returns formatted token for the current ngram

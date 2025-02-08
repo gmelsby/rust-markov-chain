@@ -4,7 +4,7 @@ import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
 
 const CHOICES = 15;
-const CHAIN_VERSION = 'v1';
+const CHAIN_VERSION = 'v2';
 
 
 
@@ -28,7 +28,7 @@ function App() {
         <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} chainVersion={CHAIN_VERSION} />
       </div>
       {output.length !== 0 && <div className='max-w-7xl m-auto'>
-        <div className='mx-3 text-start whitespace-pre-line p-5 mb-40 rounded-lg bg-neutral-700/40'>
+        <div className='mx-3 text-start whitespace-pre-wrap p-5 mb-40 rounded-lg bg-neutral-700/40'>
           <p>
             {output.join("")}
           </p>
