@@ -64,10 +64,8 @@ fn create(args: &Vec<String>) {
 
 fn run(args: &Vec<String>) -> Result<(), std::io::Error> {
     let ngram_length = Path::new(&args[0])
-        .parent()
-        .and_then(|p| p.components().last())
+        .file_stem()
         .unwrap()
-        .as_os_str()
         .to_str()
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap();

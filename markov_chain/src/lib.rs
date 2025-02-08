@@ -11,7 +11,12 @@ use std::collections::HashMap;
 use std::io::{self};
 
 // Characters that should not have a space inserted before
-const NO_SPACE_TOKENS: &str = ":.,!?;'’\n";
+const NO_SPACE_BEFORE_TOKENS: &str = ">)]}:.,!?;\n";
+// Characters that should not have a space inserted after
+const NO_SPACE_AFTER_TOKENS: &str = "<([{\n";
+// Quotation marks that should have a space before them in the dict if they start a word
+const QUOTES: &str = "\"'’`";
+
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]
 struct ChainEncoding {
@@ -89,12 +94,12 @@ impl MarkovChain {
             // Check if word needs to be split
             for word in line.split_whitespace() {
                 // For storing constituent tokens in reverse order
-                let mut tokens: Vec<String> = Vec::new();
+                let mut end_tokens: Vec<String> = Vec::new();
                 let mut word_string = word.to_string();
                 // Loop while word ends with a special token
                 while !word_string.is_empty()
                     && word_string.ends_with(|c| {
-                        for symbol in NO_SPACE_TOKENS.chars() {
+                        for symbol in NO_SPACE_BEFORE_TOKENS.chars() {
                             if c == symbol {
                                 return true;
                             }
@@ -103,16 +108,39 @@ impl MarkovChain {
                     })
                 {
                     let word_ending = word_string.pop().unwrap().to_string();
-                    tokens.push(word_ending);
+                    end_tokens.push(word_ending);
                 }
 
-                // check that word_string is not empty before pushing
+                let mut tokens: Vec<String> = Vec::new();
+
+                // Loop while word starts with a special token
+                while !word_string.is_empty()
+                    && word_string.starts_with(|c| {
+                        for symbol in NO_SPACE_AFTER_TOKENS.chars() {
+                            if c == symbol {
+                                return true;
+                            }
+                        }
+                        false
+                    })
+                {
+                    let mut word_beginning = word_string.remove(0).to_string();
+                    if QUOTES.contains(word_beginning.as_str()) {
+                        word_beginning.insert(0, ' ');
+                    }
+                    tokens.push(word_beginning);
+                }
+
+                // Check that word_string is not empty before pushing
                 if !word_string.is_empty() {
                     tokens.push(word_string);
                 }
 
+                // Add end tokens to end of tokens vec in correct order
+                tokens.extend(end_tokens.iter().rev().cloned());
+
                 // Insert all tokens that made up our string
-                for token in tokens.iter().rev() {
+                for token in tokens.iter() {
                     let token_int = self.token_dict.add_token(token);
                     Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), token_int);
                     Self::push_to_prior_tokens(&mut prior_tokens, token_int);
@@ -310,19 +338,31 @@ impl MarkovChain {
         next_tokens
     }
 
-    // Adds a space to the front of a token if it is not one of the special characters
-    pub fn format_token(token: &String) -> String {
-        // Returns a function that adds a space to the front of a token if it is not one of the characters
-        fn format_token_creator(characters: String) -> impl Fn(&String) -> String {
-            move |tk| {
-                format!(
-                    "{}{}",
-                    if !characters.contains(&*tk) { " " } else { "" },
-                    *tk
-                )
-            }
-        }
-        return format_token_creator(NO_SPACE_TOKENS.to_string())(token);
+    // Adds a space to the front of a token if it is not one of the special characters or preceeded by a special character
+    pub fn format_token(&self, token: &String) -> String {
+        let last_token_str = self
+            .token_dict
+            .convert_int_to_string(
+                *self
+                    .current_ngram
+                    .get(self.current_ngram.len() - 2)
+                    .unwrap(),
+            )
+            .unwrap_or_default();
+        // Left space quotes already have a space before them
+        let left_space_quotes: Vec<String> = QUOTES.chars().map(|c| format!(" {}", c)).collect();
+        return format!(
+            "{}{}",
+            if NO_SPACE_BEFORE_TOKENS.contains(token)
+                || left_space_quotes.contains(token)
+                || NO_SPACE_AFTER_TOKENS.contains(last_token_str.as_str())
+            {
+                ""
+            } else {
+                " "
+            },
+            token
+        );
     }
 
     // Returns formatted token for the current ngram
@@ -357,10 +397,10 @@ impl MarkovChain {
         }
         // Push token to current ngram
         Self::push_to_prior_tokens(&mut self.current_ngram, token_int);
-        return Ok(Self::format_token(token));
+        return Ok(self.format_token(token));
     }
 
-    // Finds a capital word further in the current chain and returns it at the end of its prior ngram in Result
+    // Seeks a capital word further in the current chain and returns it at the end of its prior ngram in Result
     pub fn seek_next_capital_word(&mut self) -> Result<Vec<String>, io::Error> {
         for _ in 0..500 {
             let candidates = self.peek_next_tokens(10);
