@@ -142,16 +142,16 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }));
 
   return (
-    <div className="flex justify-between flex-wrap">
-      <div className="p-2 flex whitespace-nowrap space-x-1 overflow-x-auto">
+    <>
+      <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
+        <Button size='sm' disabled={wordButtonList.length !== choices} onClick={handleRefresh}>R</Button>
+        <Button size='sm' onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
+        <Button size='sm' disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
+      </div>
+      <div className="p-2 whitespace-nowrap space-x-1 overflow-x-auto bg-neutral-700 xl:rounded-tr-2xl hide-scrollbar">
         {!generating && <WordButtons buttonList={wordButtonList} />}
       </div>
-      <div className="p-2 flex justify-end space-x-1">
-        <Button disabled={wordButtonList.length !== choices} onClick={handleRefresh}>R</Button>
-        <Button onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
-        <Button disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
-      </div>
-    </div>
+    </>
   )
 
 }

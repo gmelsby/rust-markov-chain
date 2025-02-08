@@ -3,7 +3,7 @@ import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
 
-const CHOICES = 5;
+const CHOICES = 15;
 const CHAIN_VERSION = 'v1';
 
 
@@ -36,9 +36,7 @@ function App() {
       </div >
       }
       <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto">
-        <div className='bg-neutral-700 xl:rounded-t-2xl'>
-          {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} choices={CHOICES} />}
-        </div>
+        {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} choices={CHOICES} />}
       </div>
     </>
   )
