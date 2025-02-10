@@ -312,11 +312,14 @@ impl MarkovChain {
     }
 
     // Returns a Vec of possible next tokens in the Markov chain
-    pub fn peek_next_tokens(&self, count: usize) -> Vec<String> {
+    pub fn peek_next_tokens(&self, count: usize) -> Vec<(String, usize)> {
         let next_token_distribution = self.ngram_distribution.get(&self.current_ngram);
 
         let mut next_tokens = Vec::with_capacity(self.ngram_length);
-        next_tokens.resize(self.ngram_length, "\n".to_string());
+        next_tokens.resize(
+            self.ngram_length,
+            ("\n".to_string(), self.get_newline_token()),
+        );
 
         let mut rng = thread_rng();
         // Check that next_token_list is not None
@@ -331,9 +334,12 @@ impl MarkovChain {
                     next_tokens = next_token_entries
                         .iter()
                         .map(|(tk, _)| {
-                            self.token_dict
-                                .convert_int_to_string(*tk)
-                                .expect("Error converting token int to string")
+                            (
+                                self.token_dict
+                                    .convert_int_to_string(*tk)
+                                    .expect("Error converting token int to string"),
+                                *tk,
+                            )
                         })
                         .collect();
                 }
@@ -380,7 +386,7 @@ impl MarkovChain {
     }
 
     // Returns formatted token for the current ngram
-    pub fn put_next_token(&mut self, token: &String) -> Result<String, io::Error> {
+    pub fn put_next_token(&mut self, token: usize) -> Result<(String, usize), io::Error> {
         // Check that token is a possible next token
         let next_token_list: Vec<usize> = self
             .ngram_distribution
@@ -394,63 +400,70 @@ impl MarkovChain {
         // If no tokens match, return newline and reset the current ngram
         if next_token_list.len() == 0 {
             self.clear_current_ngram();
-            return Ok("\n".to_string());
+            return Ok(("\n".to_string(), self.get_newline_token()));
         }
 
-        let token_int = self
-            .token_dict
-            .convert_string_to_int(token)
-            .expect("String not in token dictionary");
-
         // If token is not a possible next token,
-        if !next_token_list.contains(&token_int) {
+        if !next_token_list.contains(&token) {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Token is not a possible next token for current ngram",
             ));
         }
         // Push token to current ngram
-        Self::push_to_prior_tokens(&mut self.current_ngram, token_int);
-        return Ok(self.format_token(token));
+        Self::push_to_prior_tokens(&mut self.current_ngram, token);
+        return Ok((
+            self.format_token(&self.token_dict.convert_int_to_string(token).unwrap()),
+            token,
+        ));
     }
 
     // Seeks a words after newlines further in the current chain and returns it at the end of its prior ngram in Result
-    pub fn seek_next_word_after_newline(&mut self) -> Result<Vec<String>, io::Error> {
+    // If it cannot find a newline, returns current ngram + arbitrary next token
+    pub fn seek_next_word_after_newline(&mut self) -> Vec<(String, usize)> {
         let newline_token = self.get_newline_token();
         for _ in 0..1000 {
             // Look at next possible tokens
             let candidates = self.peek_next_tokens(15);
 
-            let non_newline_candidates: Vec<String> =
-                candidates.iter().filter(|&c| *c != "\n").cloned().collect();
+            let non_newline_candidates: Vec<(String, usize)> = candidates
+                .iter()
+                .filter(|&(_, tk_int)| *tk_int != newline_token)
+                .cloned()
+                .collect();
 
             // If last token was a newline and we have a non-newline candidate, return prior ngram + a non-newline candidate
             if !non_newline_candidates.is_empty()
                 && self.current_ngram.last().cloned().unwrap() == newline_token
             {
-                let prior_ngram_result: Result<Vec<String>, Error> = self
+                let prior_ngram_result: Result<Vec<(String, usize)>, Error> = self
                     .current_ngram
-                    .to_vec()
                     .iter()
-                    .map(|i| self.token_dict.convert_int_to_string(*i))
+                    .map(|i| self.token_dict.convert_int_to_string(*i).map(|s| (s, *i)))
                     .collect();
-                let mut prior_ngram_words = prior_ngram_result?;
-                prior_ngram_words.push(non_newline_candidates[0].to_string());
-                return Ok(prior_ngram_words);
+                let mut prior_ngram_words = prior_ngram_result.unwrap();
+                prior_ngram_words.push(non_newline_candidates[0].clone());
+                return prior_ngram_words;
             }
 
             // If last token was not a newline but there is a newline in the candidates, move chain forward with newline
             if candidates.len() != non_newline_candidates.len() {
-                _ = self.put_next_token(&"\n".to_string());
+                _ = self.put_next_token(newline_token);
             } else {
                 // Otherwise move chain forward with arbitrary token
-                _ = self.put_next_token(&candidates[0]);
+                _ = self.put_next_token(candidates[0].1);
             }
         }
-        Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            "Could not find a word after newline",
-        ))
+
+        let mut default_result: Vec<(String, usize)> = self
+            .current_ngram
+            .clone()
+            .into_iter()
+            .map(|tk| (self.token_dict.convert_int_to_string(tk).unwrap(), tk))
+            .collect();
+        let candidate = &self.peek_next_tokens(1)[0];
+        default_result.push(candidate.clone());
+        default_result
     }
 
     // Loads a random ngram from dict into current_ngram
@@ -471,22 +484,11 @@ impl MarkovChain {
         }
     }
 
-    // Replaces the current_ngram in self with the int values associated with passed-in ngram
-    pub fn replace_current_ngram(&mut self, ngram: Vec<String>) -> Result<(), io::Error> {
-        let ngram_ints_result: Result<Vec<usize>, io::Error> = ngram
-            .clone()
-            .iter()
-            .map(|tk| {
-                self.token_dict
-                    .convert_string_to_int(&tk.replace(" ", "").to_string())
-            })
-            .collect();
-
-        let ngram_ints = ngram_ints_result?;
-
-        match self.ngram_distribution.get(&ngram_ints) {
+    // Replaces the current_ngram in self with the int values in the passed-in ngram
+    pub fn replace_current_ngram(&mut self, ngram: Vec<usize>) -> Result<(), io::Error> {
+        match self.ngram_distribution.get(&ngram) {
             Some(_) => {
-                self.current_ngram = ngram_ints;
+                self.current_ngram = ngram;
                 Ok(())
             }
             None => Err(io::Error::new(

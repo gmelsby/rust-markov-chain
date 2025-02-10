@@ -11,6 +11,30 @@ macro_rules! log {
 }
 
 #[wasm_bindgen]
+pub struct Token {
+    str: String,
+    int: usize,
+}
+
+#[wasm_bindgen]
+impl Token {
+    #[wasm_bindgen(constructor)]
+    pub fn new(str: String, int: usize) -> Token {
+        Token { str, int }
+    }
+
+    #[wasm_bindgen]
+    pub fn get_str(&self) -> String {
+        return self.str.to_string();
+    }
+
+    #[wasm_bindgen]
+    pub fn get_int(&self) -> usize {
+        return self.int;
+    }
+}
+
+#[wasm_bindgen]
 pub struct WasmMarkovChain {
     chain: MarkovChain,
 }
@@ -25,18 +49,27 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub fn peek_next_tokens(&self, count: usize) -> Vec<String> {
+    pub fn peek_next_tokens(&self, count: usize) -> Result<Vec<Token>, JsValue> {
         log!(
             "There are {} ngrams in the dict",
             self.chain.get_ngram_count()
         );
-        self.chain.peek_next_tokens(count)
+        let tokens = self.chain.peek_next_tokens(count);
+        let result = tokens
+            .iter()
+            .map(|(tk_str, tk_int)| Token {
+                str: tk_str.to_string(),
+                int: *tk_int,
+            })
+            .collect();
+        return Ok(result);
     }
 
     #[wasm_bindgen]
-    pub fn put_next_token(&mut self, tk: String) -> Result<String, JsValue> {
+    pub fn put_next_token(&mut self, tk: usize) -> Result<String, JsValue> {
         self.chain
-            .put_next_token(&tk)
+            .put_next_token(tk)
+            .map(|(tk_str, _)| tk_str)
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
@@ -61,18 +94,24 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub fn find_paragraph_start(&mut self) -> Result<Vec<String>, JsValue> {
+    pub fn find_paragraph_start(&mut self) -> Result<Vec<Token>, JsValue> {
         self.chain
             .randomize_current_ngram()
             .map_err(|e| JsValue::from_str(&e.to_string()))?;
-        log!("randomized");
-        self.chain
-            .seek_next_word_after_newline()
-            .map_err(|e| JsValue::from_str(&e.to_string()))
+
+        let paragraph_start = self.chain.seek_next_word_after_newline();
+        let result = paragraph_start
+            .iter()
+            .map(|(tk_str, tk_int)| Token {
+                str: tk_str.to_string(),
+                int: *tk_int,
+            })
+            .collect();
+        return Ok(result);
     }
 
     #[wasm_bindgen]
-    pub fn load_ngram(&mut self, ngram: Vec<String>) -> Result<(), JsValue> {
+    pub fn load_ngram(&mut self, ngram: Vec<usize>) -> Result<(), JsValue> {
         self.chain
             .replace_current_ngram(ngram)
             .map_err(|e| JsValue::from_str(&e.to_string()))

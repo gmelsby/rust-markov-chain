@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { WasmMarkovChain } from 'markov_chain_wasm';
+import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import WordButtons from './WordButtons';
 import Button from './Button';
 
@@ -7,24 +7,24 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   {
     markovChain: WasmMarkovChain | null,
     ngramLength: number,
-    output: string[],
-    setOutput: React.Dispatch<React.SetStateAction<string[]>>,
+    output: Token[],
+    setOutput: React.Dispatch<React.SetStateAction<Token[]>>,
     loaded: boolean,
     choices: number,
   }) {
 
-  const [wordOptions, setWordOptions] = useState<string[]>([]);
+  const [wordOptions, setWordOptions] = useState<Token[]>([]);
   const [generating, setGenerating] = useState(false);
-  const [possibleStarts, setPossibleStarts] = useState<string[][]>([]);
-  const outputRef = useRef<string[]>(output);
+  const [possibleStarts, setPossibleStarts] = useState<Token[][]>([]);
+  const outputRef = useRef<Token[]>(output);
 
   const createStarts = useCallback(() => {
     if (markovChain !== null && !markovChain.is_empty()) {
-      const possibleList: string[][] = [];
-      while (possibleList.length < choices) {
-        const candidate = markovChain.find_paragraph_start();
+      const possibleList: Token[][] = [];
+      for (let i = 0; i < choices + 5; i++) {
+        const candidate: Token[] = markovChain.find_paragraph_start();
         console.log(candidate);
-        if (!possibleList.some(o => o[o.length - 1] === candidate[candidate.length - 1])) {
+        if (!possibleList.some(o => o[o.length - 1].get_int() === candidate[candidate.length - 1].get_int())) {
           possibleList.push(candidate);
         }
       }
@@ -32,12 +32,14 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }, [markovChain, choices])
 
-  const handleSubmitStart = useCallback((startVec: string[]) => {
+  // Handles the submission at the start of output
+  const handleSubmitStart = useCallback((startVec: number[]) => {
     console.log('handling submit start');
     if (markovChain && !markovChain.is_empty()) {
-      markovChain.load_ngram(startVec.slice(0, -1));
-      const formattedTk = markovChain.put_next_token(startVec[startVec.length - 1]);
-      setOutput(o => [...o, formattedTk]);
+      markovChain.load_ngram(new Uint32Array(startVec.slice(0, -1)));
+      const tk = startVec[startVec.length - 1];
+      const formattedTk = markovChain.put_next_token(tk);
+      setOutput(o => [...o, new Token(formattedTk, tk)]);
     }
   }, [markovChain, setOutput]);
 
@@ -72,12 +74,12 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
       if (markovChain && !markovChain.is_empty() && generating) {
         console.log('generating');
         if (outputRef.current.length === 0 && possibleStarts.length !== 0) {
-          handleSubmitStart(possibleStarts[0]);
+          handleSubmitStart(possibleStarts[0].map((tk) => tk.get_int()));
         } else {
           const nextToken = markovChain.peek_next_tokens(1);
-          const formattedToken = markovChain.put_next_token(nextToken[0]);
+          const formattedToken = markovChain.put_next_token(nextToken[0].get_int());
           setOutput(t => {
-            return [...t, formattedToken];
+            return [...t, new Token(formattedToken, nextToken[0].get_int())];
           });
         }
         timeoutId = setTimeout(generateTokens, 50);
@@ -112,17 +114,17 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }
 
-  const handleSubmitToken = (tk: string) => {
+  const handleSubmitToken = (tk: number) => {
     if (markovChain && !markovChain.is_empty()) {
       console.log(tk);
       const formattedTk = markovChain.put_next_token(tk);
-      setOutput(o => [...o, formattedTk]);
+      setOutput(o => [...o, new Token(formattedTk, tk)]);
     }
   }
 
   const handleBackspace = () => {
     if (markovChain && !markovChain.is_empty() && output.length > ngramLength) {
-      markovChain.load_ngram(output.slice(-(1 + ngramLength), -1));
+      markovChain.load_ngram(new Uint32Array(output.slice(-(1 + ngramLength), -1).map((tk) => tk.get_int())));
       setOutput(o => o.slice(0, -1));
     }
   }
@@ -130,15 +132,15 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   // To be passed to WordButtons as prop
   const wordButtonList = output.length === 0 ?
     possibleStarts.map(startVec => ({
-      onClick: () => handleSubmitStart(startVec),
-      key: startVec.join(''),
-      content: startVec[startVec.length - 1]
+      onClick: () => handleSubmitStart(startVec.map((tk) => tk.get_int())),
+      key: startVec[startVec.length - 1].get_str(),
+      content: startVec[startVec.length - 1].get_str()
     }))
     :
     wordOptions.map(option => ({
-      onClick: () => handleSubmitToken(option),
-      key: option,
-      content: option === '\n' ? '\\n' : option
+      onClick: () => handleSubmitToken(option.get_int()),
+      key: option.get_str(),
+      content: option.get_str() === '\n' ? '\\n' : option.get_str()
     }));
 
   return (

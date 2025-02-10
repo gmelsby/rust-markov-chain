@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { WasmMarkovChain } from 'markov_chain_wasm';
+import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
 
@@ -11,7 +11,7 @@ const CHAIN_VERSION = 'v2';
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
   const [ngramLength, setNgramLength] = useState(2);
-  const [output, setOutput] = useState<string[]>([]);
+  const [output, setOutput] = useState<Token[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   // When chain is loaded, resets output
@@ -30,7 +30,7 @@ function App() {
       {output.length !== 0 && <div className='max-w-7xl m-auto mt-5'>
         <div className='mx-3 text-start whitespace-pre-wrap p-5 mb-40 rounded-lg bg-neutral-700/40'>
           <p>
-            {output.join("")}
+            {output.map((tk) => tk.get_str()).join("")}
           </p>
         </div>
       </div >

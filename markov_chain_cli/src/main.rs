@@ -98,15 +98,15 @@ fn run(args: &Vec<String>) -> Result<(), std::io::Error> {
 
     println!("Advancing chain to after a newline\n");
     let _ = markov_chain.randomize_current_ngram();
-    let result_ngram = markov_chain.seek_next_word_after_newline().unwrap();
+    let result_ngram = markov_chain.seek_next_word_after_newline();
     println!("{:?}", result_ngram);
 
     println!("Chain loaded... generating output\n");
     for _ in 0..1000 {
         let next_tokens = markov_chain.peek_next_tokens(1).clone();
 
-        match markov_chain.put_next_token(&next_tokens[0]) {
-            Ok(tk) => {
+        match markov_chain.put_next_token(next_tokens[0].1) {
+            Ok((tk, _)) => {
                 print!("{}", tk);
             }
             Err(_) => {}
