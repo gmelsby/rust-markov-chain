@@ -76,8 +76,17 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   }
 
   return (
-    <div>
-      <div>{selectedChains.map(c =>
+    <div className="flex">
+      <div>
+        <h3>Ngram Length</h3>
+        <select
+          className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
+          value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <div className="flex space-x-1.5">{selectedChains.map(c =>
         <SelectedChainDisplay
           chain={c}
           key={c.name}
@@ -100,14 +109,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
           onChange={e => setChainOption(e.target.value)}>
           {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}
         </select >
-
       </div>}
-      <select
-        className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
-        value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
-        <option value="2">2</option>
-        <option value="3">3</option>
-      </select>
 
       {selectedChains.length > 0 && <Button onClick={() => handleLoadChain()}>
         {loaded ? 'Reset Chain' : 'Click to Load'}

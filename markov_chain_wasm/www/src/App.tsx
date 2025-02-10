@@ -23,11 +23,11 @@ function App() {
 
   return (
     <>
-      <h1>Markov Chain</h1>
       <div className="bg-neutral-700">
+        <h1>Markov Chain</h1>
         <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} chainVersion={CHAIN_VERSION} />
       </div>
-      {output.length !== 0 && <div className='max-w-7xl m-auto'>
+      {output.length !== 0 && <div className='max-w-7xl m-auto mt-5'>
         <div className='mx-3 text-start whitespace-pre-wrap p-5 mb-40 rounded-lg bg-neutral-700/40'>
           <p>
             {output.join("")}

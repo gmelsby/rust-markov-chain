@@ -15,7 +15,7 @@ const NO_SPACE_BEFORE_TOKENS: &str = ">)]}:.,!?;\n";
 // Characters that should not have a space inserted after
 const NO_SPACE_AFTER_TOKENS: &str = "<([{\n";
 // Quotation marks that should have a space before them in the dict if they start a word
-const QUOTES: &str = "\"'’`";
+const QUOTES: &str = "\"“”'’`";
 
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]
