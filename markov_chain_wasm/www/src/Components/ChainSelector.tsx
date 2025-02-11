@@ -13,20 +13,8 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
     chainVersion: string,
   }) {
-  const [chainList, setChainList] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
-
-  // Fetch list of possible chains
-  useEffect(() => {
-    const fetchChains = async () => {
-      const chainResponse = await fetch(`chains/${chainVersion}/`);
-      const chainObjects = await chainResponse.json();
-      setChainList(chainObjects.map((o: { name: string }) => o.name));
-    }
-
-    fetchChains();
-  }, [chainVersion]);
 
 
   // Reset loaded status upon change in markov chain specification
@@ -42,6 +30,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
         console.log(selectedChains);
+        // Necessary to do each chain one at a time
         await newChain.load_chain(`/chains/${chainVersion}/${chainObject.name}/${ngramLength}`, chainObject.weight);
         setLoadedChainList(l => [...l, chainObject.name]);
         console.log(`loaded chain ${chainObject.name}`);
@@ -78,7 +67,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
             loadedChainList={loadedChainList} />
         )}
 
-        <AddChain {...{ chainList, selectedChains, setSelectedChains }} />
+        <AddChain {...{ chainVersion, selectedChains, setSelectedChains }} />
       </div>
       <div>
         <div className="flex">
