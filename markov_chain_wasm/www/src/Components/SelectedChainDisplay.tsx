@@ -13,13 +13,13 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
   }) {
 
   return (
-    <div className="rounded-2xl border-2 border-neutral-500">
-      <Button onClick={() => removeChain()}>-</Button>
-      {chain.name}
+    <div className="rounded-2xl m-2 p-2 border-2 border-neutral-500">
+      <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
+      <h3>{chain.name}</h3>
       <input
         type="range"
         min="0.1"
-        max="10"
+        max="5"
         step="0.1"
         value={chain.weight}
         onChange={e => changeWeight(Number(e.target.value))}
