@@ -2,6 +2,7 @@ import Button from './Button';
 import { MdUploadFile } from 'react-icons/md';
 import { IconContext } from 'react-icons';
 import { useRef, useState } from 'react';
+import { WasmMarkovChain } from 'markov_chain_wasm';
 
 function FileDragAndDrop({ exit }: { exit: () => void }) {
   const [dragging, setDragging] = useState(false);
@@ -42,6 +43,24 @@ function FileDragAndDrop({ exit }: { exit: () => void }) {
 
   const onFileSelect = (file: File) => {
     console.log(`file dropped: ${file.name}`);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      const lengthTwoChain = new WasmMarkovChain(2);
+      lengthTwoChain.create_from_file(uint8Array);
+      lengthTwoChain.find_paragraph_start();
+      console.log(`${lengthTwoChain.peek_next_tokens(5).map(tk => tk.get_str())}`)
+
+      const lengthThreeChain = new WasmMarkovChain(3);
+      lengthThreeChain.create_from_file(uint8Array);
+      console.log('read from file');
+
+    }
+
+    reader.readAsArrayBuffer(file);
   }
 
   return (

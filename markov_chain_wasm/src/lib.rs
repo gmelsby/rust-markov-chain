@@ -1,5 +1,6 @@
+use js_sys::Uint8Array;
 use markov_chain::MarkovChain;
-use std::io::Cursor;
+use std::io::{BufRead, BufReader, Cursor};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, Response};
@@ -46,6 +47,15 @@ impl WasmMarkovChain {
         WasmMarkovChain {
             chain: MarkovChain::new(ngram_length),
         }
+    }
+
+    #[wasm_bindgen]
+    pub fn create_from_file(&mut self, file_data: Uint8Array) -> Result<(), JsValue> {
+        let cursor = Cursor::new(file_data.to_vec());
+        let reader = BufReader::new(cursor);
+        let lines = reader.lines();
+        self.chain.load_lines(lines);
+        Ok(())
     }
 
     #[wasm_bindgen]
