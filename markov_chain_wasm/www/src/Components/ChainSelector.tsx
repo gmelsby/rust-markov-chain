@@ -2,6 +2,7 @@ import { WasmMarkovChain } from 'markov_chain_wasm';
 import { useState, useEffect } from 'react';
 import SelectedChainDisplay from './SelectedChainDisplay';
 import Button from './Button';
+import AddChain from './AddChain';
 
 function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion }:
   {
@@ -15,7 +16,6 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   const [chainList, setChainList] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
-  const [chainOption, setChainOption] = useState<string>("");
 
   // Fetch list of possible chains
   useEffect(() => {
@@ -28,21 +28,12 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     fetchChains();
   }, [chainVersion]);
 
-  // Sets the chainOption to the first possible choice
-  useEffect(() => {
-    if (chainList.length) {
-      const possibleChains = chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c));
-      if (possibleChains.length) {
-        setChainOption(possibleChains[0]);
-      }
-    }
-  }, [chainList, chainList.length, selectedChains, selectedChains.length]);
 
   // Reset loaded status upon change in markov chain specification
   useEffect(() => {
     setLoaded(false);
     setLoadedChainList([]);
-  }, [selectedChains.length, ngramLength, setLoaded, setLoadedChainList])
+  }, [selectedChains.length, ngramLength, setLoaded, setLoadedChainList]);
 
 
   const handleLoadChain = async () => {
@@ -76,46 +67,35 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   }
 
   return (
-    <div className="flex">
-      <div>
-        <h3>Ngram Length</h3>
-        <select
-          className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
-          value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
-          <option value="2">2</option>
-          <option value="3">3</option>
-        </select>
+    <div>
+      <div className="flex space-x-1.5 flex-wrap">
+        {selectedChains.map(c =>
+          <SelectedChainDisplay
+            chain={c}
+            key={c.name}
+            changeWeight={changeChainWeight(c.name)}
+            removeChain={() => removeChain(c.name)}
+            loadedChainList={loadedChainList} />
+        )}
+
+        <AddChain {...{ chainList, selectedChains, setSelectedChains }} />
       </div>
-      <div className="flex space-x-1.5">{selectedChains.map(c =>
-        <SelectedChainDisplay
-          chain={c}
-          key={c.name}
-          changeWeight={changeChainWeight(c.name)}
-          removeChain={() => removeChain(c.name)}
-          loadedChainList={loadedChainList} />
-      )}</div>
+      <div>
+        <div className="flex">
+          <h3>Ngram Length: </h3>
+          <select
+            className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
+            value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
 
-      {selectedChains.length !== chainList.length && <div>
-        <Button onClick={() => {
-          if (chainOption.length) {
-            setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
-          }
-        }}>
-          +
-        </Button>
-        <select
-          className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
-          value={chainOption}
-          onChange={e => setChainOption(e.target.value)}>
-          {chainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} </option>)}
-        </select >
-      </div>}
-
-      {selectedChains.length > 0 && <Button onClick={() => handleLoadChain()}>
-        {loaded ? 'Reset Chain' : 'Click to Load'}
-      </Button>}
-
-    </div >
+        {selectedChains.length > 0 && <Button onClick={() => handleLoadChain()}>
+          {loaded ? 'Reset Chain' : 'Click to Load'}
+        </Button>}
+      </div>
+    </div>
   )
 
 }
