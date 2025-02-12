@@ -33,7 +33,7 @@ fn create(args: &Vec<String>) {
 
     // Read lines into Markov Chain
     if let Ok(lines) = read_lines(file_path) {
-        markov_chain.load_lines(lines);
+        markov_chain.load_lines(lines, markov_chain::LoadMode::PreserveDoubleNewlines);
     } else {
         println!("Error reading file");
         return;

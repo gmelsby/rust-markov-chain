@@ -25,6 +25,13 @@ struct ChainEncoding {
     ngram_distribution: HashMap<Vec<usize>, Vec<(usize, f32)>>,
 }
 
+// Enum for specifying load_lines parameter
+#[derive(PartialEq)]
+pub enum LoadMode {
+    PreserveAllNewlines,
+    PreserveDoubleNewlines,
+}
+
 pub struct MarkovChain {
     ngram_length: usize,
     token_dict: TokenDict,
@@ -78,7 +85,7 @@ impl MarkovChain {
         prior_tokens[prior_tokens_length - 1] = token;
     }
 
-    pub fn load_lines<I>(&mut self, lines: I)
+    pub fn load_lines<I>(&mut self, lines: I, mode: LoadMode)
     where
         I: IntoIterator<Item = Result<String, Error>>,
     {
@@ -91,7 +98,26 @@ impl MarkovChain {
         prior_tokens.resize(self.ngram_length, newline_token);
 
         for line in lines.into_iter().flatten() {
-            // Check if word needs to be split
+            // If we take in an empty string and mode is PreserveDoubleNewlines, handle and continue looping
+            if line.trim().is_empty() && mode == LoadMode::PreserveDoubleNewlines {
+                // Add extra newline if the prior token was not a newline
+                if prior_tokens.last().cloned().unwrap() != newline_token {
+                    Self::insert_into_ngram_dict(
+                        &mut ngram_dict,
+                        prior_tokens.clone(),
+                        newline_token,
+                    );
+                    Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+                }
+
+                // Add newline when we encounter empty line
+                Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
+                Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+
+                continue;
+            }
+
+            // Check if line needs to be split
             for word in line.split_whitespace() {
                 // For storing constituent tokens in reverse order
                 let mut end_tokens: Vec<String> = Vec::new();
@@ -124,6 +150,7 @@ impl MarkovChain {
                         false
                     })
                 {
+                    // Make left-space quote if left-most character is a quote
                     let mut word_beginning = word_string.remove(0).to_string();
                     if QUOTES.contains(word_beginning.as_str()) {
                         word_beginning.insert(0, ' ');
@@ -147,9 +174,11 @@ impl MarkovChain {
                 }
             }
 
-            // Add newline on end of line
-            Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
-            Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+            // Add newline on end of line if we are preserving newlines
+            if mode == LoadMode::PreserveAllNewlines {
+                Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
+                Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+            }
         }
 
         // Pad end of text with newlines so at worst case it will wrap around to the start of text
