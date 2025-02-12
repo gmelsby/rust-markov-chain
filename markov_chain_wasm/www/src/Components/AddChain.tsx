@@ -57,7 +57,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
   // Sets the chainOption to the first possible choice
   useEffect(() => {
     if (localChainList.length || serverChainList.length) {
-      const possibleLocalChains = localChainList.filter(c => !selectedChains.filter(ch => ch.source === 'server').map(ch => ch.name).includes(c));
+      const possibleLocalChains = localChainList.filter(c => !selectedChains.filter(ch => ch.source === 'user').map(ch => ch.name).includes(c));
       if (possibleLocalChains.length) {
         setChainOption(`${possibleLocalChains[0]} (user)`);
         return;
@@ -93,6 +93,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
           </select >
           <Button onClick={() => {
             if (chainOption.length) {
+              console.log(chainOption);
               // Case where chain is user-generated
               if (chainOption.endsWith(' (user)')) {
                 setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1, source: 'user' }]);

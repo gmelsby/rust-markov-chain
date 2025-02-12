@@ -30,12 +30,14 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
         console.log(JSON.stringify(chainObject));
-        // Necessary to do each chain one at a time
+        // Switch statement for determining where to load chain from
         switch (chainObject.source) {
           case 'server':
+            // Necessary to do each chain one at a time
             await newChain.load_chain_from_server(`/chains/${chainVersion}/${chainObject.name}/${ngramLength}`, chainObject.weight);
             break;
           case 'user':
+            // Necessary to do each chain one at a time
             await newChain.load_chain_from_indexeddb(`chains/${chainVersion}`, ngramLength.toString(), chainObject.name, chainObject.weight);
         }
         setLoadedChainList(l => [...l, `${chainObject.name}-${chainObject.source}`]);
