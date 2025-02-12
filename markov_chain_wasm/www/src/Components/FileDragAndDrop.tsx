@@ -2,7 +2,7 @@ import Button from './Button';
 import { MdUploadFile } from 'react-icons/md';
 import { IconContext } from 'react-icons';
 import { useRef, useState } from 'react';
-import { WasmMarkovChain } from 'markov_chain_wasm';
+import { WasmMarkovChain, JsLoadMode } from 'markov_chain_wasm';
 
 function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersion: string }) {
   const [dragging, setDragging] = useState(false);
@@ -49,13 +49,15 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
       const arrayBuffer = reader.result as ArrayBuffer;
       const uint8Array = new Uint8Array(arrayBuffer);
 
+      const loadMode = JsLoadMode.PreserveDoubleNewlines;
+
       const lengthTwoChain = new WasmMarkovChain(2);
-      lengthTwoChain.create_from_file(uint8Array);
+      lengthTwoChain.create_from_file(uint8Array, loadMode);
       lengthTwoChain.find_paragraph_start();
       await lengthTwoChain.write_chain_to_indexedb(`chains/${chainVersion}`, '2', file.name)
 
       const lengthThreeChain = new WasmMarkovChain(3);
-      lengthThreeChain.create_from_file(uint8Array);
+      lengthThreeChain.create_from_file(uint8Array, loadMode);
       await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', file.name)
 
       exit();

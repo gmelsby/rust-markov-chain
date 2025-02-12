@@ -1,6 +1,6 @@
 use idb::{Factory, TransactionMode};
 use js_sys::Uint8Array;
-use markov_chain::MarkovChain;
+use markov_chain::{LoadMode, MarkovChain};
 use std::io::{BufRead, BufReader, Cursor};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
@@ -36,6 +36,24 @@ impl Token {
     }
 }
 
+// Enum for getting type inference about LoadMode into Js
+#[wasm_bindgen]
+#[derive(PartialEq)]
+pub enum JsLoadMode {
+    PreserveAllNewlines,
+    PreserveDoubleNewlines,
+}
+
+// Converts JsLoadMode to LoadMode
+impl JsLoadMode {
+    fn convert(&self) -> LoadMode {
+        match self {
+            Self::PreserveAllNewlines => LoadMode::PreserveAllNewlines,
+            Self::PreserveDoubleNewlines => LoadMode::PreserveDoubleNewlines,
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub struct WasmMarkovChain {
     chain: MarkovChain,
@@ -51,11 +69,15 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub fn create_from_file(&mut self, file_data: Uint8Array) -> Result<(), JsValue> {
+    pub fn create_from_file(
+        &mut self,
+        file_data: Uint8Array,
+        load_mode: JsLoadMode,
+    ) -> Result<(), JsValue> {
         let cursor = Cursor::new(file_data.to_vec());
         let reader = BufReader::new(cursor);
         let lines = reader.lines();
-        self.chain.load_lines(lines);
+        self.chain.load_lines(lines, load_mode.convert());
         Ok(())
     }
 
