@@ -128,7 +128,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     }
   }
 
-  const handleBackspace = () => {
+  const handleBackspace = useCallback(() => {
+    console.log("backspace");
     if (markovChain && !markovChain.is_empty() && output.length + preOutput.length > ngramLength) {
       // use preOutput if our output length is not long enough
       const tkSlice = output.length > ngramLength ?
@@ -143,7 +144,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
       markovChain.load_ngram(new Uint32Array(tkSlice.map((tk) => tk.get_int())));
       setOutput(o => o.slice(0, -1));
     }
-  }
+  }, [markovChain, ngramLength, output, preOutput, setOutput]);
 
   // To be passed to WordButtons as prop
   const wordButtonList = output.length === 0 ?
@@ -162,9 +163,28 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   return (
     <>
       <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
-        <Button size='sm' disabled={(wordButtonList.length !== choices && output.length > 0) || generating} onClick={handleRefresh}>R</Button>
-        <Button size='sm' onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
-        <Button size='sm' disabled={output.length + preOutput.length <= ngramLength || generating} onClick={handleBackspace}>{'<-'}</Button>
+        <Button
+          size='sm'
+          disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
+          onClick={handleRefresh}
+        >
+          R
+        </Button>
+        <Button
+          size='sm'
+          onClick={handleGenerateToggle}
+        >
+          {generating ? 'S' : 'G'}
+        </Button>
+        <Button
+          size='sm'
+          disabled={output.length + preOutput.length <= ngramLength || generating}
+          onClick={handleBackspace}
+          onLongPress={handleBackspace}
+          longPressOptions={{ repeat: true }}
+        >
+          {'<-'}
+        </Button>
       </div>
       <div className="bg-neutral-700 xl:rounded-tr-2xl">
         {!generating && <WordButtons buttonList={wordButtonList} />}

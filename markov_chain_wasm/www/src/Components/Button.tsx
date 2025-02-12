@@ -1,10 +1,14 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-function Button({ onClick, onLongPress, longPressMs, children, disabled, size, use }:
+function Button({ onClick, onLongPress, longPressOptions, children, disabled, size, use }:
   {
     onClick: () => void,
     onLongPress?: () => void,
-    longPressMs?: number,
+    longPressOptions?: {
+      repeat?: boolean,
+      longPressMs?: number,
+      repeatMs?: number,
+    }
     children: React.ReactNode,
     disabled?: boolean,
     size?: "sm"
@@ -12,16 +16,51 @@ function Button({ onClick, onLongPress, longPressMs, children, disabled, size, u
   }) {
 
   const longPressTimeout = useRef<number | null>(null);
+  const longPressRepeatTimeout = useRef<number | null>(null);
+  const onLongPressRef = useRef(onLongPress);
   const [isPress, setIsPress] = useState(false);
   const [isLongPress, setIsLongPress] = useState(false);
 
+  // Clears out timeouts when component unmounts or is disabled
+  useEffect(() => {
+    return (() => {
+      setIsPress(false);
+      setIsLongPress(false);
+      if (longPressTimeout.current) {
+        clearTimeout(longPressTimeout.current);
+      }
+      if (longPressRepeatTimeout.current) {
+        clearTimeout(longPressRepeatTimeout.current)
+      }
+    })
+  }, [disabled]);
+
+  // Keeps onLongPress that is used in event handlers current
+  useEffect(() => {
+    onLongPressRef.current = onLongPress;
+  }, [onLongPress]);
+
   const handleMouseDown = () => {
     setIsPress(true);
-    if (onLongPress) {
+    if (onLongPressRef.current) {
       longPressTimeout.current = setTimeout(() => {
-        onLongPress();
         setIsLongPress(true);
-      }, longPressMs || 500);
+
+        if (!longPressOptions?.repeat && onLongPressRef.current) {
+          onLongPressRef.current();
+        } else {
+          // Repeat if repeat is true in longPressOptions
+          const repeater = () => {
+            if (onLongPressRef.current) {
+              onLongPressRef.current();
+            }
+            longPressRepeatTimeout.current = setTimeout(repeater, longPressOptions?.repeatMs || 100);
+          }
+
+          repeater();
+
+        }
+      }, longPressOptions?.longPressMs || 500);
     }
   }
 
@@ -29,6 +68,10 @@ function Button({ onClick, onLongPress, longPressMs, children, disabled, size, u
     if (longPressTimeout.current) {
       clearTimeout(longPressTimeout.current);
     }
+    if (longPressRepeatTimeout.current) {
+      clearTimeout(longPressRepeatTimeout.current);
+    }
+    // Perform click action if pressed but not a long press
     if (isPress && !isLongPress) {
       onClick();
     }
@@ -39,6 +82,9 @@ function Button({ onClick, onLongPress, longPressMs, children, disabled, size, u
   const handleMouseLeave = () => {
     if (longPressTimeout.current) {
       clearTimeout(longPressTimeout.current);
+    }
+    if (longPressRepeatTimeout.current) {
+      clearTimeout(longPressRepeatTimeout.current)
     }
     setIsPress(false);
   }
