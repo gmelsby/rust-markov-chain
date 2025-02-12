@@ -1,4 +1,4 @@
-use markov_chain::MarkovChain;
+use markov_chain::{LoadMode, MarkovChain};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -14,9 +14,19 @@ where
 }
 
 fn create(args: &Vec<String>) {
+    // If we have a "-n" flag then LoadMode is PreserveNewLines
+    let filtered_args: Vec<String> = args.iter().cloned().filter(|arg| arg != "-n").collect();
+
+    // Default to PreserveDoubleNewLines
+    let mut load_mode = LoadMode::PreserveDoubleNewlines;
+    // If filtered_args is not the same length as args, we hava an -n flag
+    if filtered_args.len() != args.len() {
+        load_mode = LoadMode::PreserveAllNewlines;
+    }
+
     // Parse arguments
-    let file_path = Path::new(&args[0]);
-    let ngram_length = args
+    let file_path = Path::new(&filtered_args[0]);
+    let ngram_length = filtered_args
         .get(1)
         .map(|x| x.parse())
         .unwrap()
@@ -33,7 +43,7 @@ fn create(args: &Vec<String>) {
 
     // Read lines into Markov Chain
     if let Ok(lines) = read_lines(file_path) {
-        markov_chain.load_lines(lines, markov_chain::LoadMode::PreserveDoubleNewlines);
+        markov_chain.load_lines(lines, load_mode);
     } else {
         println!("Error reading file");
         return;
