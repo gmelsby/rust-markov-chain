@@ -86,6 +86,7 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
     if (longPressRepeatTimeout.current) {
       clearTimeout(longPressRepeatTimeout.current)
     }
+    setIsLongPress(false);
     setIsPress(false);
   }
 
@@ -100,6 +101,9 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
       onMouseUp={disabled || !onLongPress ? undefined : handleMouseUp}
       onMouseLeave={disabled || !onLongPress ? undefined : handleMouseLeave}
       onClick={disabled || onLongPress ? undefined : onClick}
+      onTouchStart={disabled || !onLongPress ? undefined : handleMouseDown}
+      onTouchEnd={disabled || !onLongPress ? undefined : handleMouseUp}
+      onTouchCancel={disabled || !onLongPress ? undefined : handleMouseLeave}
     >
       {children}
     </button>
