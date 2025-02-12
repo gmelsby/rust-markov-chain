@@ -53,12 +53,10 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
       lengthTwoChain.create_from_file(uint8Array);
       lengthTwoChain.find_paragraph_start();
       await lengthTwoChain.write_chain_to_indexedb(`chains/${chainVersion}`, '2', file.name)
-      console.log(`${lengthTwoChain.peek_next_tokens(5).map(tk => tk.get_str())}`)
 
       const lengthThreeChain = new WasmMarkovChain(3);
       lengthThreeChain.create_from_file(uint8Array);
       await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', file.name)
-      console.log('read from file');
 
       exit();
 
