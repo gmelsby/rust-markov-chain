@@ -85,7 +85,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
               console.log(e.target.value);
             }}>
             <optgroup label="User-Generated">
-              {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain}user`}>{chain}</option>)}
+              {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain} (user)`}>{chain}</option>)}
             </optgroup>
             <optgroup label="From Server">
               {serverChainList.filter(c => !selectedChains.filter(ch => ch.source === "server").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}server`}>{chain}</option>)}
