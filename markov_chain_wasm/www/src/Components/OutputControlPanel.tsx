@@ -38,7 +38,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     if (markovChain && !markovChain.is_empty()) {
       markovChain.load_ngram(new Uint32Array(startVec.slice(0, -1)));
       const tk = startVec[startVec.length - 1];
-      const formattedTk = markovChain.put_next_token(tk);
+      const formattedTk = markovChain.put_next_token(tk).trim();
       setOutput(o => [...o, new Token(formattedTk, tk)]);
     }
   }, [markovChain, setOutput]);
