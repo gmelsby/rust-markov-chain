@@ -7,8 +7,8 @@ import { openDB } from 'idb';
 function AddChain({ chainVersion, selectedChains, setSelectedChains }:
   {
     chainVersion: string,
-    selectedChains: { name: string, weight: number }[],
-    setSelectedChains: React.Dispatch<React.SetStateAction<{ name: string, weight: number }[]>>
+    selectedChains: { name: string, weight: number, source: 'user' | 'server' }[],
+    setSelectedChains: React.Dispatch<React.SetStateAction<{ name: string, weight: number, source: 'user' | 'server' }[]>>
   }) {
 
 
@@ -48,19 +48,26 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
       setLocalChainList(chains.map(c => c.toString()));
     }
 
-    getChains();
-  })
+    if (!creating) {
+      getChains();
+    };
+  }, [chainVersion, creating]);
 
 
   // Sets the chainOption to the first possible choice
   useEffect(() => {
-    if (serverChainList.length) {
-      const possibleChains = serverChainList.filter(c => !selectedChains.map(ch => ch.name).includes(c));
-      if (possibleChains.length) {
-        setChainOption(possibleChains[0]);
+    if (localChainList.length || serverChainList.length) {
+      const possibleLocalChains = localChainList.filter(c => !selectedChains.filter(ch => ch.source === 'server').map(ch => ch.name).includes(c));
+      if (possibleLocalChains.length) {
+        setChainOption(`${possibleLocalChains[0]} (user)`);
+        return;
+      }
+      const possibleServerChains = serverChainList.filter(c => !selectedChains.filter(ch => ch.source === 'server').map(ch => ch.name).includes(c));
+      if (possibleServerChains.length) {
+        setChainOption(possibleServerChains[0]);
       }
     }
-  }, [serverChainList, serverChainList.length, selectedChains, selectedChains.length]);
+  }, [localChainList, localChainList.length, serverChainList, serverChainList.length, selectedChains, selectedChains.length]);
 
   if (creating) {
     return <FileDragAndDrop exit={() => setCreating(false)} {...{ chainVersion }} />;
@@ -68,28 +75,31 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
   return (
     <div className="flex flex-col items-center justify-evenly border-2 border-neutral-500 border-dotted m-1.5 xl:m-2 p-2 rounded-2xl min-h-45 min-w-45">
       <h3 className='m-2 font-bold'>Add Chain</h3>
-      {serverChainList.length !== selectedChains.length &&
+      {serverChainList.length + localChainList.length !== selectedChains.length &&
         <div>
           <select
             className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
             value={chainOption}
-            onChange={e => setChainOption(e.target.value)}>
+            onChange={e => {
+              setChainOption(e.target.value);
+              console.log(e.target.value);
+            }}>
             <optgroup label="User-Generated">
-              {localChainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain} (user)</option>)}
+              {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`}>{chain} (user)</option>)}
             </optgroup>
             <optgroup label="From Server">
-              {serverChainList.filter(c => !selectedChains.map(ch => ch.name).includes(c)).map(chain => <option key={chain}>{chain}</option>)}
+              {serverChainList.filter(c => !selectedChains.filter(ch => ch.source === "server").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}server`}>{chain}</option>)}
             </optgroup>
           </select >
           <Button onClick={() => {
             if (chainOption.length) {
               // Case where chain is user-generated
               if (chainOption.endsWith(' (user)')) {
-                setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1 }]);
+                setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1, source: 'user' }]);
               }
               // Case where chain is on server
               else {
-                setSelectedChains(chains => [...chains, { name: chainOption, weight: 1 }]);
+                setSelectedChains(chains => [...chains, { name: chainOption, weight: 1, source: 'server' }]);
               }
             }
           }}>

@@ -13,7 +13,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
     chainVersion: string,
   }) {
-  const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number }[]>([]);
+  const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number, source: 'user' | 'server' }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
 
 
@@ -29,11 +29,17 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     if (selectedChains.length > 0) {
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
-        console.log(selectedChains);
+        console.log(JSON.stringify(chainObject));
         // Necessary to do each chain one at a time
-        await newChain.load_chain(`/chains/${chainVersion}/${chainObject.name}/${ngramLength}`, chainObject.weight);
-        setLoadedChainList(l => [...l, chainObject.name]);
-        console.log(`loaded chain ${chainObject.name}`);
+        switch (chainObject.source) {
+          case 'server':
+            await newChain.load_chain_from_server(`/chains/${chainVersion}/${chainObject.name}/${ngramLength}`, chainObject.weight);
+            break;
+          case 'user':
+            await newChain.load_chain_from_indexeddb(`chains/${chainVersion}`, ngramLength.toString(), chainObject.name, chainObject.weight);
+        }
+        setLoadedChainList(l => [...l, `${chainObject.name}-${chainObject.source}`]);
+        console.log(`loaded chain ${chainObject.name}-${chainObject.source}`);
       }
       setMarkovChain(newChain);
       setLoaded(true);
@@ -61,7 +67,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
         {selectedChains.map(c =>
           <SelectedChainDisplay
             chain={c}
-            key={c.name}
+            key={`${c.name}${c.source}`}
             changeWeight={changeChainWeight(c.name)}
             removeChain={() => removeChain(c.name)}
             loadedChainList={loadedChainList} />

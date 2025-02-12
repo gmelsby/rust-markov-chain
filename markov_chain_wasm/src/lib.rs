@@ -133,7 +133,7 @@ impl WasmMarkovChain {
     }
 
     #[wasm_bindgen]
-    pub async fn load_chain(&mut self, url: String, weight: f32) -> Result<(), JsValue> {
+    pub async fn load_chain_from_server(&mut self, url: &str, weight: f32) -> Result<(), JsValue> {
         let options = RequestInit::new();
         options.set_method("GET");
         let request = Request::new_with_str_and_init(&url, &options)?;
@@ -150,6 +150,51 @@ impl WasmMarkovChain {
         self.chain
             .merge_chain(cursor, weight)
             .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    #[wasm_bindgen]
+    pub async fn load_chain_from_indexeddb(
+        &mut self,
+        db_name: &str,
+        object_store_name: &str,
+        key: &str,
+        weight: f32,
+    ) -> Result<(), JsValue> {
+        // Open db
+        let factory = Factory::new().map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let open_request = factory.open(db_name, Some(1)).unwrap();
+
+        let db = open_request
+            .await
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        // Start making transaction object
+        let transaction = db
+            .transaction(&[object_store_name], TransactionMode::ReadWrite)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        let store = transaction
+            .object_store(object_store_name)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        let stored_chain: Option<JsValue> = store
+            .get(JsValue::from_str(key))
+            .map_err(|e| JsValue::from_str(&e.to_string()))?
+            .await
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        if let Some(chain_data) = stored_chain {
+            let array_buf = chain_data.dyn_into::<Uint8Array>().unwrap();
+            let buf = js_sys::Uint8Array::new(&array_buf).to_vec();
+            log!("Got response of length {}", buf.len());
+            let cursor = Cursor::new(buf);
+
+            self.chain
+                .merge_chain(cursor, weight)
+                .map_err(|e| JsValue::from_str(&e.to_string()))
+        } else {
+            return Err(JsValue::from_str("Unable to read chain data"));
+        }
     }
 
     #[wasm_bindgen]
