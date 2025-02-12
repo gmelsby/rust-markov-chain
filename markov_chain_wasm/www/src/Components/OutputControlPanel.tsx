@@ -18,6 +18,9 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   const [possibleStarts, setPossibleStarts] = useState<Token[][]>([]);
   const outputRef = useRef<Token[]>(output);
 
+  // Keeps track of tokens that come before visible output, for use when backspacing towards start of output
+  const [preOutput, setPreOutput] = useState<Token[]>([]);
+
   const createStarts = useCallback(() => {
     if (markovChain !== null && !markovChain.is_empty()) {
       const possibleList: Token[][] = [];
@@ -33,12 +36,15 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   }, [markovChain, choices])
 
   // Handles the submission at the start of output
-  const handleSubmitStart = useCallback((startVec: number[]) => {
+  const handleSubmitStart = useCallback((startVec: Token[]) => {
     console.log('handling submit start');
     if (markovChain && !markovChain.is_empty()) {
-      markovChain.load_ngram(new Uint32Array(startVec.slice(0, -1)));
-      const tk = startVec[startVec.length - 1];
+      const preStartTokens = startVec.slice(0, -1);
+      markovChain.load_ngram(new Uint32Array(preStartTokens.map(t => t.get_int())));
+      const tk = startVec[startVec.length - 1].get_int();
       const formattedTk = markovChain.put_next_token(tk).trim();
+      // Set states accordingly
+      setPreOutput(preStartTokens);
       setOutput(o => [...o, new Token(formattedTk, tk)]);
     }
   }, [markovChain, setOutput]);
@@ -74,7 +80,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
       if (markovChain && !markovChain.is_empty() && generating) {
         console.log('generating');
         if (outputRef.current.length === 0 && possibleStarts.length !== 0) {
-          handleSubmitStart(possibleStarts[0].map((tk) => tk.get_int()));
+          handleSubmitStart(possibleStarts[0]);
         } else {
           const nextToken = markovChain.peek_next_tokens(1);
           const formattedToken = markovChain.put_next_token(nextToken[0].get_int());
@@ -123,8 +129,18 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   }
 
   const handleBackspace = () => {
-    if (markovChain && !markovChain.is_empty() && output.length > ngramLength) {
-      markovChain.load_ngram(new Uint32Array(output.slice(-(1 + ngramLength), -1).map((tk) => tk.get_int())));
+    if (markovChain && !markovChain.is_empty() && output.length + preOutput.length > ngramLength) {
+      // use preOutput if our output length is not long enough
+      const tkSlice = output.length > ngramLength ?
+        // Second to last complete n-gram in output
+        output.slice(-(1 + ngramLength), -1)
+        :
+        // Get suitable amount of preOutput elements with as many elements from output (minus last one) as possible
+        preOutput.slice(output.length - 1).concat(output.slice(0, -1));
+
+      console.log(tkSlice.map(t => t.get_str()));
+
+      markovChain.load_ngram(new Uint32Array(tkSlice.map((tk) => tk.get_int())));
       setOutput(o => o.slice(0, -1));
     }
   }
@@ -132,7 +148,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   // To be passed to WordButtons as prop
   const wordButtonList = output.length === 0 ?
     possibleStarts.map(startVec => ({
-      onClick: () => handleSubmitStart(startVec.map((tk) => tk.get_int())),
+      onClick: () => handleSubmitStart(startVec),
       key: startVec[startVec.length - 1].get_str(),
       content: startVec[startVec.length - 1].get_str()
     }))
@@ -146,9 +162,9 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   return (
     <>
       <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
-        <Button size='sm' disabled={wordButtonList.length !== choices} onClick={handleRefresh}>R</Button>
+        <Button size='sm' disabled={(wordButtonList.length !== choices && output.length > 0) || generating} onClick={handleRefresh}>R</Button>
         <Button size='sm' onClick={handleGenerateToggle}>{generating ? 'S' : 'G'}</Button>
-        <Button size='sm' disabled={output.length <= ngramLength} onClick={handleBackspace}>{'<-'}</Button>
+        <Button size='sm' disabled={output.length + preOutput.length <= ngramLength || generating} onClick={handleBackspace}>{'<-'}</Button>
       </div>
       <div className="bg-neutral-700 xl:rounded-tr-2xl">
         {!generating && <WordButtons buttonList={wordButtonList} />}
