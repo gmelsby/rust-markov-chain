@@ -404,14 +404,17 @@ impl MarkovChain {
             " "
         };
 
-        // Special case where we have a left-space quote after a new-line
-        let special_case_token = if left_space_quotes.contains(token) && last_token_str == "\n" {
+        // Special case where we have a left-space quote after a NO_SPACE_AFTER token
+        let tk = if left_space_quotes.contains(token)
+            && (NO_SPACE_AFTER_TOKENS.contains(last_token_str.as_str())
+                || left_space_quotes.contains(&last_token_str))
+        {
             token.trim()
         } else {
             token
         };
 
-        format!("{}{}", space, special_case_token)
+        format!("{}{}", space, tk)
     }
 
     // Returns formatted token for the current ngram
