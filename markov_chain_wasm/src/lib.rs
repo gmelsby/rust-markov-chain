@@ -1,3 +1,4 @@
+use idb::{Factory, TransactionMode};
 use js_sys::Uint8Array;
 use markov_chain::MarkovChain;
 use std::io::{BufRead, BufReader, Cursor};
@@ -55,6 +56,54 @@ impl WasmMarkovChain {
         let reader = BufReader::new(cursor);
         let lines = reader.lines();
         self.chain.load_lines(lines);
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub async fn write_chain_to_indexedb(
+        &self,
+        db_name: &str,
+        object_store_name: &str,
+        key: &str,
+    ) -> Result<(), JsValue> {
+        // Create buffer to write to db
+        let mut buffer = Vec::new();
+        self.chain
+            .save_chain(&mut buffer)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let blob = Uint8Array::from(buffer.as_slice());
+
+        // Open db
+        let factory = Factory::new().map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let open_request = factory.open(db_name, Some(1)).unwrap();
+
+        let db = open_request
+            .await
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        // Start making transaction object
+        let transaction = db
+            .transaction(&[object_store_name], TransactionMode::ReadWrite)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        let store = transaction
+            .object_store(object_store_name)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        let id = store
+            .put(&blob, Some(&JsValue::from_str(key)))
+            .unwrap()
+            .await;
+
+        // Return error if something went wrong when inserting value
+        if !id.is_ok() {
+            return Err(JsValue::from_str("Unable to make transaction"));
+        }
+
+        // Commit transaction
+        transaction.commit().unwrap().await.unwrap();
+
+        db.close();
         Ok(())
     }
 

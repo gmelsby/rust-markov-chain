@@ -4,7 +4,7 @@ import { IconContext } from 'react-icons';
 import { useRef, useState } from 'react';
 import { WasmMarkovChain } from 'markov_chain_wasm';
 
-function FileDragAndDrop({ exit }: { exit: () => void }) {
+function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersion: string }) {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,22 +41,26 @@ function FileDragAndDrop({ exit }: { exit: () => void }) {
     }
   }
 
+  // Handle file submission
   const onFileSelect = (file: File) => {
-    console.log(`file dropped: ${file.name}`);
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const arrayBuffer = reader.result as ArrayBuffer;
       const uint8Array = new Uint8Array(arrayBuffer);
 
       const lengthTwoChain = new WasmMarkovChain(2);
       lengthTwoChain.create_from_file(uint8Array);
       lengthTwoChain.find_paragraph_start();
+      await lengthTwoChain.write_chain_to_indexedb(`chains/${chainVersion}`, '2', file.name)
       console.log(`${lengthTwoChain.peek_next_tokens(5).map(tk => tk.get_str())}`)
 
       const lengthThreeChain = new WasmMarkovChain(3);
       lengthThreeChain.create_from_file(uint8Array);
+      await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', file.name)
       console.log('read from file');
+
+      exit();
 
     }
 
