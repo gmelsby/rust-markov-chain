@@ -69,50 +69,52 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
     }
   }, [localChainList, localChainList.length, serverChainList, serverChainList.length, selectedChains, selectedChains.length]);
 
-  if (creating) {
-    return <FileDragAndDrop exit={() => setCreating(false)} {...{ chainVersion }} />;
-  }
   return (
-    <div className="flex flex-col items-center justify-evenly border-2 border-neutral-500 border-dotted m-1.5 xl:m-2 p-2 rounded-2xl min-h-45 min-w-45">
-      <h3 className='m-2 font-bold'>Add Chain</h3>
-      {serverChainList.length + localChainList.length !== selectedChains.length &&
-        <div>
-          <select
-            className='h-12 max-w-52 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
-            value={chainOption}
-            onChange={e => {
-              setChainOption(e.target.value);
-              console.log(e.target.value);
-            }}>
-            <optgroup label="User-Generated">
-              {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain} (user)`}>{chain}</option>)}
-            </optgroup>
-            <optgroup label="From Server">
-              {serverChainList.filter(c => !selectedChains.filter(ch => ch.source === "server").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}server`}>{chain}</option>)}
-            </optgroup>
-          </select >
-          <Button onClick={() => {
-            if (chainOption.length) {
-              console.log(chainOption);
-              // Case where chain is user-generated
-              if (chainOption.endsWith(' (user)')) {
-                setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1, source: 'user' }]);
-              }
-              // Case where chain is on server
-              else {
-                setSelectedChains(chains => [...chains, { name: chainOption, weight: 1, source: 'server' }]);
-              }
-            }
-          }}>
-            +
-          </Button>
-        </div>
-      }
-      <div className="m-2"><Button size="sm" onClick={() => setCreating(true)}>
-        <span className="flex items-center">
-          <MdUploadFile className="mr-2" />Create new chain from .txt file
-        </span></Button>
-      </div>
+    <div className="border-2 border-neutral-500 border-dotted rounded-2xl min-h-40 min-w-30 m-1.5 xl:m-2 flex flex-col">
+      {creating ?
+        <FileDragAndDrop exit={() => setCreating(false)} {...{ chainVersion }} />
+        :
+        <div className="flex flex-col items-center justify-evenly p-2 flex-grow">
+          <h3 className='m-2 font-bold'>Add Chain</h3>
+          {serverChainList.length + localChainList.length !== selectedChains.length &&
+            <div>
+              <select
+                className='h-12 max-w-52 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
+                value={chainOption}
+                onChange={e => {
+                  setChainOption(e.target.value);
+                  console.log(e.target.value);
+                }}>
+                <optgroup label="User-Generated">
+                  {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain} (user)`}>{chain}</option>)}
+                </optgroup>
+                <optgroup label="From Server">
+                  {serverChainList.filter(c => !selectedChains.filter(ch => ch.source === "server").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}server`}>{chain}</option>)}
+                </optgroup>
+              </select >
+              <Button onClick={() => {
+                if (chainOption.length) {
+                  console.log(chainOption);
+                  // Case where chain is user-generated
+                  if (chainOption.endsWith(' (user)')) {
+                    setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1, source: 'user' }]);
+                  }
+                  // Case where chain is on server
+                  else {
+                    setSelectedChains(chains => [...chains, { name: chainOption, weight: 1, source: 'server' }]);
+                  }
+                }
+              }}>
+                +
+              </Button>
+            </div>
+          }
+          <div className="m-2"><Button size="sm" onClick={() => setCreating(true)}>
+            <span className="flex items-center">
+              <MdUploadFile className="mr-2" />Create new chain from .txt file
+            </span></Button>
+          </div>
+        </div>}
     </div >
   );
 }
