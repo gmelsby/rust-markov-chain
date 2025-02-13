@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import WordButtons from './WordButtons';
 import Button from './Button';
+import { MdOutlineBackspace, MdPlayArrow, MdRefresh } from 'react-icons/md';
 
 function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices }:
   {
@@ -165,27 +166,32 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
       <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
         <Button
           size='sm'
-          disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
-          onClick={handleRefresh}
-        >
-          R
-        </Button>
-        <Button
-          size='sm'
           onClick={handleGenerateToggle}
         >
-          {generating ? 'S' : 'G'}
+          <MdPlayArrow />
         </Button>
-        <Button
-          size='sm'
-          disabled={output.length + preOutput.length <= ngramLength || generating}
-          onClick={handleBackspace}
-          onLongPress={handleBackspace}
-          longPressOptions={{ repeat: true }}
-        >
-          {'<-'}
-        </Button>
-      </div>
+        {generating ? <></> :
+          <>
+            <Button
+              size='sm'
+              disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
+              onClick={handleRefresh}
+            >
+              <MdRefresh />
+            </Button>
+
+            <Button
+              size='sm'
+              disabled={output.length + preOutput.length <= ngramLength || generating}
+              onClick={handleBackspace}
+              onLongPress={handleBackspace}
+              longPressOptions={{ repeat: true }}
+            >
+              <MdOutlineBackspace />
+            </Button>
+          </>
+        }
+      </div >
       <div className="bg-neutral-700 xl:rounded-tr-2xl">
         {!generating && <WordButtons buttonList={wordButtonList} />}
       </div>
