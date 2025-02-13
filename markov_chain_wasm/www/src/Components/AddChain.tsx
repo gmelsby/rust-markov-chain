@@ -110,7 +110,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
       }
       <div className="m-2"><Button size="sm" onClick={() => setCreating(true)}>
         <span className="flex items-center">
-          Create from .txt file <MdUploadFile className="ml-2" />
+          <MdUploadFile className="mr-2" />Create new chain from .txt file
         </span></Button>
       </div>
     </div >
