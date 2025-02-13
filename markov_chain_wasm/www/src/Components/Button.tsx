@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-function Button({ onClick, onLongPress, longPressOptions, children, disabled, size, use }:
+function Button({ onClick, onLongPress, longPressOptions, children, disabled, size, use, active }:
   {
     onClick: () => void,
     onLongPress?: () => void,
@@ -13,6 +13,7 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
     disabled?: boolean,
     size?: "sm"
     use?: "remove"
+    active?: boolean
   }) {
 
   const longPressTimeout = useRef<number | null>(null);
@@ -95,7 +96,9 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
       className={`${disabled ? 'cursor-not-allowed opacity-50 ' : `${use === 'remove' ? 'hover:bg-red-900' : 'hover:bg-blue-950'} cursor-pointer transition active:scale-95 `}
         ${size === 'sm' ? 'h-8 px-4 ' : 'h-12 px-6 '}
         ${onLongPress && isPress ? 'transition scale-95' : ''}
-        items-center justify-center rounded-md bg-neutral-950 font-medium text-neutral-50  
+        items-center justify-center rounded-md font-medium text-neutral-50  
+      ${active ? 'not-motion-safe:bg-blue-950' : ''}
+      bg-neutral-950
 } `}
       onMouseDown={disabled || !onLongPress ? undefined : handleMouseDown}
       onMouseUp={disabled || !onLongPress ? undefined : handleMouseUp}
@@ -105,7 +108,9 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
       onTouchEnd={disabled || !onLongPress ? undefined : handleMouseUp}
       onTouchCancel={disabled || !onLongPress ? undefined : handleMouseLeave}
     >
-      {children}
+      <div className={`${active ? 'motion-safe:animate-pulse' : ''}`}>
+        {children}
+      </div>
     </button>
   );
 }

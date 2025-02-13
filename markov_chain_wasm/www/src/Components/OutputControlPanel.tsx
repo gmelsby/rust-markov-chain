@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import WordButtons from './WordButtons';
 import Button from './Button';
-import { MdOutlineBackspace, MdPlayArrow, MdRefresh } from 'react-icons/md';
+import { MdFastForward, MdOutlineBackspace, MdPause, MdPlayArrow, MdRefresh } from 'react-icons/md';
 
 function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices }:
   {
@@ -16,6 +16,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
   const [wordOptions, setWordOptions] = useState<Token[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [fastForward, setFastForward] = useState(false);
   const [possibleStarts, setPossibleStarts] = useState<Token[][]>([]);
   const outputRef = useRef<Token[]>(output);
 
@@ -89,7 +90,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
             return [...t, new Token(formattedToken, nextToken[0].get_int())];
           });
         }
-        timeoutId = setTimeout(generateTokens, 50);
+        timeoutId = setTimeout(generateTokens, fastForward ? 0 : 50);
       }
 
     }
@@ -100,7 +101,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
     return () => clearTimeout(timeoutId);
 
-  }, [markovChain, generating, possibleStarts, setOutput, handleSubmitStart]);
+  }, [markovChain, generating, possibleStarts, fastForward, setOutput, handleSubmitStart]);
 
 
   // Handler for refreshing token options
@@ -117,6 +118,11 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
   const handleGenerateToggle = () => {
     if (markovChain && !markovChain.is_empty()) {
+      // Turn off fast forward when turning generating off
+      if (generating) {
+        setFastForward(false);
+      }
+
       setGenerating((g: boolean) => !g);
     }
   }
@@ -168,9 +174,21 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
           size='sm'
           onClick={handleGenerateToggle}
         >
-          <MdPlayArrow />
+          {generating ?
+            <MdPause />
+            :
+            <MdPlayArrow />
+          }
         </Button>
-        {generating ? <></> :
+        {generating ?
+          <Button
+            size='sm'
+            onClick={() => setFastForward(f => !f)}
+            active={fastForward}
+          >
+            <MdFastForward />
+          </Button>
+          :
           <>
             <Button
               size='sm'
