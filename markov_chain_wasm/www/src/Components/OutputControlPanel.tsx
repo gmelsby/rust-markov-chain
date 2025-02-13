@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import WordButtons from './WordButtons';
 import Button from './Button';
-import { MdFastForward, MdOutlineBackspace, MdPause, MdPlayArrow, MdRefresh } from 'react-icons/md';
+import { MdArrowDownward, MdFastForward, MdOutlineBackspace, MdPause, MdPlayArrow, MdRefresh } from 'react-icons/md';
 
-function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices }:
+function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices, autoScroll, setAutoScroll }:
   {
     markovChain: WasmMarkovChain | null,
     ngramLength: number,
@@ -12,6 +12,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     setOutput: React.Dispatch<React.SetStateAction<Token[]>>,
     loaded: boolean,
     choices: number,
+    autoScroll: boolean,
+    setAutoScroll: React.Dispatch<React.SetStateAction<boolean>>,
   }) {
 
   const [wordOptions, setWordOptions] = useState<Token[]>([]);
@@ -169,47 +171,55 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
   return (
     <>
-      <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
-        <Button
-          size='sm'
-          onClick={handleGenerateToggle}
-        >
-          {generating ?
-            <MdPause />
-            :
-            <MdPlayArrow />
-          }
-        </Button>
-        {generating ?
+      <div className="flex flex-row justify-between">
+        <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
           <Button
             size='sm'
-            onClick={() => setFastForward(f => !f)}
-            active={fastForward}
+            onClick={handleGenerateToggle}
           >
-            <MdFastForward />
+            {generating ?
+              <MdPause />
+              :
+              <MdPlayArrow />
+            }
           </Button>
-          :
-          <>
+          {generating ?
             <Button
               size='sm'
-              disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
-              onClick={handleRefresh}
+              onClick={() => setFastForward(f => !f)}
+              active={fastForward}
             >
-              <MdRefresh />
+              <MdFastForward />
             </Button>
+            :
+            <>
+              <Button
+                size='sm'
+                disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
+                onClick={handleRefresh}
+              >
+                <MdRefresh />
+              </Button>
 
-            <Button
-              size='sm'
-              disabled={output.length + preOutput.length <= ngramLength || generating}
-              onClick={handleBackspace}
-              onLongPress={handleBackspace}
-              longPressOptions={{ repeat: true }}
-            >
-              <MdOutlineBackspace />
-            </Button>
-          </>
-        }
-      </div >
+              <Button
+                size='sm'
+                disabled={output.length + preOutput.length <= ngramLength || generating}
+                onClick={handleBackspace}
+                onLongPress={handleBackspace}
+                longPressOptions={{ repeat: true }}
+              >
+                <MdOutlineBackspace />
+              </Button>
+            </>
+          }
+        </div >
+        {!autoScroll && <div
+          className="p-2 bg-neutral-950 rounded-full cursor-pointer"
+          onClick={() => setAutoScroll(true)}
+        >
+          <MdArrowDownward />
+        </div>}
+      </div>
       <div className="bg-neutral-700 xl:rounded-tr-2xl">
         {!generating && <WordButtons buttonList={wordButtonList} />}
       </div>
