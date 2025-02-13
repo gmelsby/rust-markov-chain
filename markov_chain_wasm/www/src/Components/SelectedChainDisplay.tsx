@@ -15,8 +15,13 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
 
   return (
     <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-500 max-w-xs flex-grow flex flex-col justify-between">
-      <div>
-        <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
+      <div className="flex flex-row justify-between">
+        <div>
+          <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
+        </div>
+        <div>
+          {loadedChainList.includes(`${chain.name}-${chain.source}`) ? '✅' : null}
+        </div>
       </div>
       <div>
         <h3 className="text-center font-bold mt-2 break-words">{chain.name}</h3>
@@ -35,9 +40,7 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
         <h3 className="text-center my-2">Weight: <span className="font-bold">{chain.weight}</span></h3>
 
       </div>
-      <div>
-        {loadedChainList.includes(`${chain.name}-${chain.source}`) ? '✅' : null}
-      </div>
+
     </div >
   );
 }
