@@ -22,17 +22,18 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
         <h3 className="text-center font-bold mt-2 break-words">{chain.name}</h3>
         {chain.source === 'user' && <h3 className="text-center font-light text-xs mt-.05">(User-Generated)</h3>}
       </div>
-      <input
-        className='accent-blue-700 hover:cursor-pointer mx-auto block my-2'
-        type="range"
-        min="0.1"
-        max="5"
-        step="0.1"
-        value={chain.weight}
-        onChange={e => changeWeight(Number(e.target.value))}
-      />
       <div>
+        <input
+          className='accent-blue-700 hover:cursor-pointer mx-auto block my-2'
+          type="range"
+          min="0.1"
+          max="5"
+          step="0.1"
+          value={chain.weight}
+          onChange={e => changeWeight(Number(e.target.value))}
+        />
         <h3 className="text-center my-2">Weight: <span className="font-bold">{chain.weight}</span></h3>
+
       </div>
       <div>
         {loadedChainList.includes(`${chain.name}-${chain.source}`) ? '✅' : null}
