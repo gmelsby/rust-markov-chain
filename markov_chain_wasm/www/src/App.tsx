@@ -27,14 +27,13 @@ function App() {
         <h1>Markov Chain</h1>
         <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} chainVersion={CHAIN_VERSION} />
       </div>
-      {output.length !== 0 && <div className='max-w-7xl m-auto mt-5'>
-        <div className='mx-3 text-start whitespace-pre-wrap p-5 mb-40 rounded-lg bg-neutral-700/40'>
+      <div className='max-w-7xl m-auto mt-5'>
+        <div className={`mx-3 text-start whitespace-pre-wrap p-5 mb-40 rounded-lg bg-neutral-700/40 ${output.length === 0 ? 'opacity-0' : ''}`}>
           <p>
             {output.map((tk) => tk.get_str()).join("")}
           </p>
         </div>
       </div >
-      }
       <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto">
         {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded }} choices={CHOICES} />}
       </div>
