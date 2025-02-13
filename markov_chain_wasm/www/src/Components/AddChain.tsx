@@ -78,7 +78,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
       {serverChainList.length + localChainList.length !== selectedChains.length &&
         <div>
           <select
-            className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
+            className='h-12 max-w-52 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
             value={chainOption}
             onChange={e => {
               setChainOption(e.target.value);

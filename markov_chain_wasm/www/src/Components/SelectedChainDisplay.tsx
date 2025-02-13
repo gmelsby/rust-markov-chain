@@ -14,9 +14,9 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
   }) {
 
   return (
-    <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-500">
+    <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-500 max-w-xs flex-grow">
       <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
-      <h3 className="text-center font-bold mt-2">{chain.name}</h3>
+      <h3 className="text-center font-bold mt-2 break-words">{chain.name}</h3>
       {chain.source === 'user' && <h3 className="text-center font-light text-xs mt-.05">(User-Generated)</h3>}
       <input
         className='accent-blue-700 hover:cursor-pointer mx-auto block my-2'
