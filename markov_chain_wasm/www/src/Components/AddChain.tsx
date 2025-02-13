@@ -70,7 +70,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
   }, [localChainList, localChainList.length, serverChainList, serverChainList.length, selectedChains, selectedChains.length]);
 
   return (
-    <div className="border-2 border-neutral-500 border-dotted rounded-2xl min-h-40 min-w-30 m-1.5 xl:m-2 flex flex-col">
+    <div className="border-2 border-neutral-600 bg-neutral-800/50 border-solid rounded-2xl min-h-40 min-w-30 m-1.5 xl:m-2 flex flex-col">
       {creating ?
         <FileDragAndDrop exit={() => setCreating(false)} {...{ chainVersion }} />
         :

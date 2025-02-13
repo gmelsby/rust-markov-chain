@@ -14,7 +14,7 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
   }) {
 
   return (
-    <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-500 max-w-xs flex-grow flex flex-col justify-between">
+    <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800/60 max-w-xs flex-grow flex flex-col justify-between">
       <div className="flex flex-row justify-between">
         <div>
           <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
