@@ -97,7 +97,7 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
         ${size === 'sm' ? 'h-8 px-4 ' : 'h-12 px-6 '}
         ${onLongPress && isPress ? 'transition scale-95' : ''}
         items-center justify-center rounded-md font-medium   
-      ${active ? 'not-motion-safe:bg-blue-950 text-neutral-400' : 'text-neutral-50'}
+      ${active ? 'not-motion-safe:bg-blue-950 text-neutral-500' : 'text-neutral-50'}
       bg-neutral-950
 } `}
       onMouseDown={disabled || !onLongPress ? undefined : handleMouseDown}
