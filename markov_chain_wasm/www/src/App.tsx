@@ -53,7 +53,11 @@ function App() {
     const handleScroll = () => {
       if (outputDivRef.current) {
         // Handle scrolling up
-        if (autoScroll && lastKnownScrollYRef.current >= window.scrollY + 5) {
+        if (autoScroll &&
+          lastKnownScrollYRef.current >= window.scrollY + 5 &&
+          window.scrollY + window.innerHeight < document.documentElement.scrollHeight
+          // case where iOS Safari "scrolls up" with spring behavior from beyond the document end
+        ) {
 
           setAutoScroll(false);
         }
