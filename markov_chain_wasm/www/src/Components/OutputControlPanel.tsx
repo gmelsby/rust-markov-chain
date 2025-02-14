@@ -214,7 +214,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
           }
         </div >
         {!autoScroll && <div
-          className="p-2 bg-neutral-950 rounded-full cursor-pointer"
+          className="p-2 bg-neutral-950 rounded-full cursor-pointer w-10 h-10 flex justify-center items-center mx-1.5"
           onClick={() => setAutoScroll(true)}
         >
           <MdArrowDownward />
