@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { WasmMarkovChain, Token } from 'markov_chain_wasm';
+import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
 
@@ -11,7 +11,7 @@ const CHAIN_VERSION = 'v2';
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
   const [ngramLength, setNgramLength] = useState(2);
-  const [output, setOutput] = useState<Token[]>([]);
+  const [output, setOutput] = useState<{ str: string, int: number }[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
   const outputDivRef = useRef<HTMLDivElement>(null);
@@ -88,7 +88,7 @@ function App() {
       <div className='max-w-7xl m-auto mt-5 pb-25' ref={outputDivRef}>
         <div className={`mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40 ${output.length === 0 ? 'opacity-0' : ''}`}>
           <p>
-            {output.map((tk) => tk.get_str()).join("")}
+            {output.map((tk) => tk.str).join("")}
           </p>
         </div>
       </div>

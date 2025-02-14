@@ -8,8 +8,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   {
     markovChain: WasmMarkovChain | null,
     ngramLength: number,
-    output: Token[],
-    setOutput: React.Dispatch<React.SetStateAction<Token[]>>,
+    output: { str: string, int: number }[],
+    setOutput: React.Dispatch<React.SetStateAction<{ str: string, int: number }[]>>,
     loaded: boolean,
     choices: number,
     autoScroll: boolean,
@@ -19,20 +19,19 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   const [wordOptions, setWordOptions] = useState<Token[]>([]);
   const [generating, setGenerating] = useState(false);
   const [fastForward, setFastForward] = useState(false);
-  const [possibleStarts, setPossibleStarts] = useState<Token[][]>([]);
-  const outputRef = useRef<Token[]>(output);
+  const [possibleStarts, setPossibleStarts] = useState<{ str: string, int: number }[][]>([]);
+  const outputRef = useRef<{ str: string, int: number }[]>(output);
 
   // Keeps track of tokens that come before visible output, for use when backspacing towards start of output
-  const [preOutput, setPreOutput] = useState<Token[]>([]);
+  const [preOutput, setPreOutput] = useState<{ str: string, int: number }[]>([]);
 
   const createStarts = useCallback(() => {
     if (markovChain !== null && !markovChain.is_empty()) {
-      const possibleList: Token[][] = [];
+      const possibleList: { str: string, int: number }[][] = [];
       for (let i = 0; i < choices + 5; i++) {
         const candidate: Token[] = markovChain.find_paragraph_start();
-        console.log(candidate);
-        if (!possibleList.some(o => o[o.length - 1].get_int() === candidate[candidate.length - 1].get_int())) {
-          possibleList.push(candidate);
+        if (!possibleList.some(o => o[o.length - 1].int === candidate[candidate.length - 1].get_int())) {
+          possibleList.push(candidate.map(tk => ({ str: tk.get_str(), int: tk.get_int() })));
         }
       }
       setPossibleStarts(possibleList);
@@ -40,16 +39,15 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   }, [markovChain, choices])
 
   // Handles the submission at the start of output
-  const handleSubmitStart = useCallback((startVec: Token[]) => {
-    console.log('handling submit start');
+  const handleSubmitStart = useCallback((startVec: { str: string, int: number }[]) => {
     if (markovChain && !markovChain.is_empty()) {
       const preStartTokens = startVec.slice(0, -1);
-      markovChain.load_ngram(new Uint32Array(preStartTokens.map(t => t.get_int())));
-      const tk = startVec[startVec.length - 1].get_int();
+      markovChain.load_ngram(new Uint32Array(preStartTokens.map(t => t.int)));
+      const tk = startVec[startVec.length - 1].int;
       const formattedTk = markovChain.put_next_token(tk).trim();
       // Set states accordingly
       setPreOutput(preStartTokens);
-      setOutput(o => [...o, new Token(formattedTk, tk)]);
+      setOutput(o => [...o, { str: formattedTk, int: tk }]);
     }
   }, [markovChain, setOutput]);
 
@@ -58,7 +56,6 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   // Creates starts when chain initializes or is reset to 0 length
   useEffect(() => {
     if (loaded && markovChain !== null && !markovChain?.is_empty() && output.length == 0) {
-      console.log('creating starts');
       createStarts();
     }
   }, [markovChain, loaded, createStarts, output.length]);
@@ -67,7 +64,6 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   // While generating is true, skips updating wordOptions because users cannot select them
   useEffect(() => {
     if (markovChain && !markovChain.is_empty() && output.length > 0 && !generating) {
-      console.log('updating word options');
       setWordOptions(markovChain.peek_next_tokens(choices));
     }
   }, [markovChain, output, generating, choices]);
@@ -82,14 +78,13 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
     let timeoutId: number;
     const generateTokens = async () => {
       if (markovChain && !markovChain.is_empty() && generating) {
-        console.log('generating');
         if (outputRef.current.length === 0 && possibleStarts.length !== 0) {
           handleSubmitStart(possibleStarts[0]);
         } else {
           const nextToken = markovChain.peek_next_tokens(1);
           const formattedToken = markovChain.put_next_token(nextToken[0].get_int());
           setOutput(t => {
-            return [...t, new Token(formattedToken, nextToken[0].get_int())];
+            return [...t, { str: formattedToken, int: nextToken[0].get_int() }];
           });
         }
         timeoutId = setTimeout(generateTokens, fastForward ? 0 : 50);
@@ -131,14 +126,12 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
   const handleSubmitToken = (tk: number) => {
     if (markovChain && !markovChain.is_empty()) {
-      console.log(tk);
       const formattedTk = markovChain.put_next_token(tk);
-      setOutput(o => [...o, new Token(formattedTk, tk)]);
+      setOutput(o => [...o, { str: formattedTk, int: tk }]);
     }
   }
 
   const handleBackspace = useCallback(() => {
-    console.log("backspace");
     if (markovChain && !markovChain.is_empty() && output.length + preOutput.length > ngramLength) {
       // use preOutput if our output length is not long enough
       const tkSlice = output.length > ngramLength ?
@@ -148,9 +141,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
         // Get suitable amount of preOutput elements with as many elements from output (minus last one) as possible
         preOutput.slice(output.length - 1).concat(output.slice(0, -1));
 
-      console.log(tkSlice.map(t => t.get_str()));
-
-      markovChain.load_ngram(new Uint32Array(tkSlice.map((tk) => tk.get_int())));
+      markovChain.load_ngram(new Uint32Array(tkSlice.map((tk) => tk.int)));
       setOutput(o => o.slice(0, -1));
     }
   }, [markovChain, ngramLength, output, preOutput, setOutput]);
@@ -159,8 +150,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
   const wordButtonList = output.length === 0 ?
     possibleStarts.map(startVec => ({
       onClick: () => handleSubmitStart(startVec),
-      key: startVec[startVec.length - 1].get_str(),
-      content: startVec[startVec.length - 1].get_str()
+      key: startVec[startVec.length - 1].str,
+      content: startVec[startVec.length - 1].str
     }))
     :
     wordOptions.map(option => ({
