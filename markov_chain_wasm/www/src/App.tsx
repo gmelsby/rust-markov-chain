@@ -70,7 +70,6 @@ function App() {
         }
       }
       lastKnownScrollYRef.current = window.scrollY;
-      console.log(lastKnownScrollYRef)
     };
     window.addEventListener('scroll', handleScroll);
 

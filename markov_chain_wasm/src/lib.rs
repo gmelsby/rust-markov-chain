@@ -6,11 +6,13 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, Response};
 
+/*
 macro_rules! log {
     ( $( $t:tt )* ) => {
         web_sys::console::log_1(&format!( $( $t )* ).into());
     }
 }
+ */
 
 #[wasm_bindgen]
 pub struct Token {
@@ -131,10 +133,6 @@ impl WasmMarkovChain {
 
     #[wasm_bindgen]
     pub fn peek_next_tokens(&self, count: usize) -> Result<Vec<Token>, JsValue> {
-        log!(
-            "There are {} ngrams in the dict",
-            self.chain.get_ngram_count()
-        );
         let tokens = self.chain.peek_next_tokens(count);
         let result = tokens
             .iter()
@@ -166,7 +164,6 @@ impl WasmMarkovChain {
         let response: Response = resp_value.dyn_into().unwrap();
         let array_buf = JsFuture::from(response.array_buffer()?).await?;
         let buf = js_sys::Uint8Array::new(&array_buf).to_vec();
-        log!("Got response of length {}", buf.len());
         let cursor = Cursor::new(buf);
 
         self.chain
@@ -208,7 +205,6 @@ impl WasmMarkovChain {
         if let Some(chain_data) = stored_chain {
             let array_buf = chain_data.dyn_into::<Uint8Array>().unwrap();
             let buf = js_sys::Uint8Array::new(&array_buf).to_vec();
-            log!("Got response of length {}", buf.len());
             let cursor = Cursor::new(buf);
 
             self.chain
