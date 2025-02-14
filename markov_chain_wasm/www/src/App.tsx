@@ -53,14 +53,14 @@ function App() {
     const handleScroll = () => {
       if (outputDivRef.current) {
         // Handle scrolling up
-        if (lastKnownScrollYRef.current >= window.scrollY + 5 && autoScroll) {
+        if (autoScroll && lastKnownScrollYRef.current >= window.scrollY + 5) {
 
           setAutoScroll(false);
         }
         // Handle scrolling down
         else {
           // Check if scrolled to bottom
-          if (window.scrollY + window.innerHeight + 10 >= document.documentElement.scrollHeight && !autoScroll) {
+          if (!autoScroll && window.scrollY + window.innerHeight + 10 >= document.documentElement.scrollHeight) {
             setAutoScroll(true);
           }
         }
