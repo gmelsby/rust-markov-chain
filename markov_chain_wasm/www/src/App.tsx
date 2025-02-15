@@ -13,7 +13,7 @@ function App() {
   const [ngramLength, setNgramLength] = useState(2);
   const [output, setOutput] = useState<{ str: string, int: number }[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(false);
   const outputDivRef = useRef<HTMLDivElement>(null);
   const paddingDivRef = useRef<HTMLDivElement>(null);
   const lastKnownScrollYRef = useRef<number>(0);

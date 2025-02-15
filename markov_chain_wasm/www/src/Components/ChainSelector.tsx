@@ -72,7 +72,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
             loadedChainList={loadedChainList} />
         )}
 
-        <AddChain {...{ chainVersion, selectedChains, setSelectedChains }} />
+        <AddChain {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }} />
       </div>
       <div>
         <div className="flex">
