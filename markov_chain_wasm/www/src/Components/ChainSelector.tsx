@@ -29,7 +29,6 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     if (selectedChains.length > 0) {
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
-        console.log(JSON.stringify(chainObject));
         // Switch statement for determining where to load chain from
         switch (chainObject.source) {
           case 'server':
@@ -41,7 +40,6 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
             await newChain.load_chain_from_indexeddb(`chains/${chainVersion}`, ngramLength.toString(), chainObject.name, chainObject.weight);
         }
         setLoadedChainList(l => [...l, `${chainObject.name}-${chainObject.source}`]);
-        console.log(`loaded chain ${chainObject.name}-${chainObject.source}`);
       }
       setMarkovChain(newChain);
       setLoaded(true);
@@ -49,18 +47,17 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   };
 
   // Curried function that changes the weight of a selected chain
-  const changeChainWeight = (name: string) => {
+  const changeChainWeight = (name: string, source: string) => {
     return (newWeight: number) => {
-      setSelectedChains(chains => chains.map(chain => chain.name === name ? { ...chain, weight: newWeight } : chain));
+      setSelectedChains(chains => chains.map(chain => chain.name === name && chain.source === source ? { ...chain, weight: newWeight } : chain));
       setLoaded(false);
       setLoadedChainList([]);
     }
   };
 
   // Removes a chain with passed in name from selectedChains
-  const removeChain = (name: string) => {
-    console.log('removing')
-    setSelectedChains(chains => chains.filter(c => c.name !== name));
+  const removeChain = (name: string, source: string) => {
+    setSelectedChains(chains => chains.filter(c => !(c.name === name && c.source === source)));
   }
 
   return (
@@ -70,8 +67,8 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
           <SelectedChainDisplay
             chain={c}
             key={`${c.name}${c.source}`}
-            changeWeight={changeChainWeight(c.name)}
-            removeChain={() => removeChain(c.name)}
+            changeWeight={changeChainWeight(c.name, c.source)}
+            removeChain={() => removeChain(c.name, c.source)}
             loadedChainList={loadedChainList} />
         )}
 
