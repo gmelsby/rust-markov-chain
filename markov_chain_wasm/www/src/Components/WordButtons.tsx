@@ -16,9 +16,11 @@ function WordButtons({ buttonList }:
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const selectedButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Drag to scroll functions
   const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
     if (horizontalScrollRef.current && overflowing) {
       setDragging(true);
       setStartX(e.pageX - horizontalScrollRef.current.offsetLeft);
@@ -38,7 +40,7 @@ function WordButtons({ buttonList }:
 
   const handleMouseUp = useCallback(() => {
     setDragging(false);
-  }, [setDragging]);
+  }, []);
 
   // Check for overflow upon resizing and changes to child elements
   useEffect(() => {
@@ -82,11 +84,100 @@ function WordButtons({ buttonList }:
     };
   }, [handleMouseMove, handleMouseUp]);
 
+  // Keyboard control functions
+  const handleMouseEnter = useCallback(() => {
+    setSelectedIndex(null);
+  }, []);
+
+  const handleKeydown = useCallback((e: KeyboardEvent) => {
+    console.log(e.key);
+    // Only do something if no modifiers are held
+    if (e.metaKey || e.altKey || e.shiftKey || e.ctrlKey) {
+      return;
+    }
+
+    switch (e.key) {
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex !== null && !e.repeat)
+          buttonList[selectedIndex].onClick()
+        else if (selectedIndex === null)
+          setSelectedIndex(0);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        setSelectedIndex(i =>
+          i === null ? 0 : Math.max(0, i - 1)
+        );
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        setSelectedIndex(i =>
+          i === null ? 0 : Math.min(buttonList.length - 1, i + 1)
+        );
+        break;
+      case 'Escape':
+        setSelectedIndex(null);
+        break;
+    }
+  }, [selectedIndex, buttonList]);
+
+
+  // Set up event listeners for keyboard controls
+  useEffect(() => {
+    const container = horizontalScrollRef.current;
+    if (container) {
+      window.addEventListener('mouseenter', handleMouseEnter);
+      window.addEventListener('keydown', handleKeydown);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('mouseenter', handleMouseEnter);
+        window.removeEventListener('keydown', handleKeydown);
+      }
+    }
+  }, [handleMouseEnter, handleKeydown]);
+
+  // Clears keyboard control when a click occurs
+  useEffect(() => {
+    const clearIndex = () => {
+      setSelectedIndex(null);
+    };
+    window.addEventListener('mousedown', clearIndex);
+
+    return () => {
+      window.removeEventListener('mousedown', clearIndex);
+    }
+  }, [])
+
+  // Handle updating selectedIndex when number of Buttons changes
+  useEffect(() => {
+    setSelectedIndex(i => i === null ? null : Math.min(i, buttonList.length - 1))
+  }, [buttonList.length])
+
+  useEffect(() => {
+    if (selectedButtonRef.current && selectedIndex) {
+      selectedButtonRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center' })
+    }
+  }, [buttonList, selectedIndex])
+
   return (
-    <div ref={horizontalScrollRef} onMouseDown={handleMouseDown} className={`p-2 whitespace-nowrap space-x-1 overflow-x-auto hide-scrollbar ${dragging ? 'cursor-grabbing' : overflowing ? 'cursor-grab' : ''}`}>
+    <div
+      ref={horizontalScrollRef}
+      onMouseDown={handleMouseDown}
+      className={`p-2 whitespace-nowrap space-x-1 overflow-x-auto hide-scrollbar
+      ${dragging ? 'cursor-grabbing' : overflowing ? 'cursor-grab' : ''}`}
+    >
       {
-        buttonList.map(({ content, onClick, key }) =>
-          <Button key={key} {...{ onClick }} onLongPress={() => { }}>{content}</Button>
+        buttonList.map(({ content, onClick, key }, idx) =>
+          <Button
+            key={key}
+            buttonRef={idx === selectedIndex ? selectedButtonRef : undefined} {...{ onClick }}
+            selected={idx === selectedIndex}
+            onLongPress={() => { }}
+          >
+            {content}
+          </Button>
         )
       }
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-function Button({ onClick, onLongPress, longPressOptions, children, disabled, size, use, active }:
+function Button({ onClick, onLongPress, longPressOptions, children, disabled, size, use, active, selected, buttonRef }:
   {
     onClick: () => void,
     onLongPress?: () => void,
@@ -14,6 +14,8 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
     size?: "sm"
     use?: "remove"
     active?: boolean
+    selected?: boolean
+    buttonRef?: React.RefObject<HTMLButtonElement>
   }) {
 
   const longPressTimeout = useRef<number | null>(null);
@@ -98,12 +100,14 @@ function Button({ onClick, onLongPress, longPressOptions, children, disabled, si
         ${onLongPress && isPress ? 'transition scale-95' : ''}
         items-center justify-center rounded-md font-medium   
       ${active ? 'not-motion-safe:bg-blue-950 text-neutral-500' : 'text-neutral-50'}
+      ${selected ? 'outline-2 outline-blue-600' : ''}
       bg-neutral-950
 } `}
       onMouseDown={disabled || !onLongPress ? undefined : handleMouseDown}
       onMouseUp={disabled || !onLongPress ? undefined : handleMouseUp}
       onMouseLeave={disabled || !onLongPress ? undefined : handleMouseLeave}
       onClick={disabled || onLongPress ? undefined : onClick}
+      ref={buttonRef}
     >
       <div className={`${active ? 'motion-safe:animate-pulse' : ''}`}>
         {children}

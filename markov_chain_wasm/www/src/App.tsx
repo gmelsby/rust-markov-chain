@@ -21,15 +21,9 @@ function App() {
   useEffect(() => {
     if (loaded) {
       setOutput([]);
-    }
-  }, [loaded]);
-
-  // When output is cleared, turn autoScroll on
-  useEffect(() => {
-    if (!output.length) {
       setAutoScroll(true);
     }
-  }, [output.length]);
+  }, [loaded]);
 
   // Sets up resize observer to scroll to bottom
   useEffect(() => {
@@ -84,8 +78,8 @@ function App() {
         <h1>Markov Chain</h1>
         <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} chainVersion={CHAIN_VERSION} />
       </div>
-      <div className='max-w-7xl m-auto mt-5 pb-25' ref={outputDivRef}>
-        <div className={`mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40 ${output.length === 0 ? 'opacity-0' : ''}`}>
+      <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
+        <div className={'mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40'}>
           <p>
             {output.map((tk) => tk.str).join("")}
           </p>

@@ -83,7 +83,6 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
                 value={chainOption}
                 onChange={e => {
                   setChainOption(e.target.value);
-                  console.log(e.target.value);
                 }}>
                 <optgroup label="User-Generated">
                   {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain} (user)`}>{chain}</option>)}
@@ -94,7 +93,6 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains }:
               </select >
               <Button onClick={() => {
                 if (chainOption.length) {
-                  console.log(chainOption);
                   // Case where chain is user-generated
                   if (chainOption.endsWith(' (user)')) {
                     setSelectedChains(chains => [...chains, { name: chainOption.slice(0, -7), weight: 1, source: 'user' }]);
