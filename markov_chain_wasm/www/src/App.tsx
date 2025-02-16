@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
@@ -17,13 +17,20 @@ function App() {
   const outputDivRef = useRef<HTMLDivElement>(null);
   const paddingDivRef = useRef<HTMLDivElement>(null);
   const lastKnownScrollYRef = useRef<number>(0);
+
+  // Reset output to empty
+  const resetOutput = useCallback(() => {
+    setOutput([]);
+    setAutoScroll(true);
+
+  }, []);
+
   // When chain is loaded, resets output
   useEffect(() => {
     if (loaded) {
-      setOutput([]);
-      setAutoScroll(true);
+      resetOutput();
     }
-  }, [loaded]);
+  }, [loaded, resetOutput]);
 
   // Sets up resize observer to scroll to bottom
   useEffect(() => {
@@ -72,11 +79,13 @@ function App() {
     }
   }, [autoScroll]);
 
+
+
   return (
     <div className="">
       <div className="bg-neutral-700">
         <h1>Markov Chain</h1>
-        <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} chainVersion={CHAIN_VERSION} />
+        <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
       </div>
       <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
         <div className={'mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40'}>

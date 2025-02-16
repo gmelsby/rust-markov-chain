@@ -4,7 +4,7 @@ import SelectedChainDisplay from './SelectedChainDisplay';
 import Button from './Button';
 import AddChain from './AddChain';
 
-function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion }:
+function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion, resetChain }:
   {
     setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
     ngramLength: number,
@@ -12,6 +12,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     loaded: boolean,
     setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
     chainVersion: string,
+    resetChain: () => void,
   }) {
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number, source: 'user' | 'server' }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
@@ -95,8 +96,8 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
           </select>
         </div>
 
-        {selectedChains.length > 0 && <Button onClick={handleLoadChains}>
-          {loaded ? 'Reset Chain' : 'Click to Load'}
+        {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
+          {loaded ? 'Reset Output' : 'Click to Load'}
         </Button>}
       </div>
     </div>
