@@ -95,7 +95,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
   // Returns div to icon display when a chain is added or removed from selectedChains
   useEffect(() => {
     setUiState('icon');
-  }, [selectedChains.length])
+  }, [selectedChains.length]);
 
 
   return (
