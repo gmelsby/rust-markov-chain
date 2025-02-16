@@ -10,7 +10,7 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [chainName, setChainName] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [loadMode, setLoadMode] = useState<JsLoadMode>(JsLoadMode.PreserveDoubleNewlines);
+  const [loadMode, setLoadMode] = useState<'PreserveAllNewlines' | 'PreserveDoubleNewlines'>('PreserveDoubleNewlines');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -68,13 +68,15 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
       const arrayBuffer = reader.result as ArrayBuffer;
       const uint8Array = new Uint8Array(arrayBuffer);
 
+      const jsLoadMode = loadMode === 'PreserveAllNewlines' ? JsLoadMode.PreserveAllNewlines : JsLoadMode.PreserveDoubleNewlines;
+
       const lengthTwoChain = new WasmMarkovChain(2);
-      lengthTwoChain.create_from_file(uint8Array, loadMode);
+      lengthTwoChain.create_from_file(uint8Array, jsLoadMode);
       lengthTwoChain.find_paragraph_start();
       await lengthTwoChain.write_chain_to_indexedb(`chains/${chainVersion}`, '2', chainName);
 
       const lengthThreeChain = new WasmMarkovChain(3);
-      lengthThreeChain.create_from_file(uint8Array, loadMode);
+      lengthThreeChain.create_from_file(uint8Array, jsLoadMode);
       await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', chainName);
 
       exit();
@@ -93,7 +95,15 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
         <>
           <div className="flex flex-col justify-evenly items-center m-2">
             <TextInput value={chainName} setValue={setChainName} />
-            <Button onClick={createChain}>Generate chain</Button>
+            <select
+              className='h-8 m-2 text-sm font-medium items-center justify-center rounded-md bg-neutral-950 px-4 text-neutral-50 hover:bg-blue-950 cursor-pointer'
+              value={loadMode} onChange={e => setLoadMode(e.target.value as 'PreserveAllNewlines' | 'PreserveDoubleNewlines')}>
+              <option value='PreserveDoubleNewlines'>Ignore single '\n' (default)</option>
+              <option value='PreserveAllNewlines'>Include single '\n'</option>
+            </select>
+            <div className='m-2'>
+              <Button size='sm' onClick={createChain}>Generate chain</Button>
+            </div>
           </div>
         </>
         :

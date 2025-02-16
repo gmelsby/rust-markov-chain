@@ -65,7 +65,7 @@ function TextInput({ value, setValue }:
           </>
           :
           <>
-            <h3>{value}</h3>
+            <h3 className="break-words w-full">{value}</h3>
             <div className="cursor-pointer ml-2" onClick={() => setEditing(true)}><MdEdit /></div>
           </>
       }
