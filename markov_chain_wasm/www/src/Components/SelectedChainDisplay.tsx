@@ -1,6 +1,8 @@
+import { MdCheck, MdOutlineSync } from 'react-icons/md';
 import Button from './Button';
+import { IconContext } from 'react-icons';
 
-function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChain }:
+function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChain, loading }:
   {
     chain:
     {
@@ -10,17 +12,27 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
     },
     changeWeight: (newWeight: number) => void;
     loadedChainList: string[],
-    removeChain: () => void;
+    removeChain: () => void,
+    loading: boolean,
   }) {
 
   return (
     <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800/60 max-w-xs flex-grow flex flex-col justify-between">
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row items-center justify-between">
         <div>
           <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
         </div>
-        <div>
-          {loadedChainList.includes(`${chain.name}-${chain.source}`) ? '✅' : null}
+        <div className="mr-3">
+
+          <IconContext.Provider value={{ size: '20' }}>
+            {loading ?
+              loadedChainList.includes(`${chain.name}-${chain.source}`) ?
+                <MdCheck />
+                :
+                <MdOutlineSync className='animate-spin' />
+              :
+              null}
+          </IconContext.Provider>
         </div>
       </div>
       <div>

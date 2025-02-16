@@ -15,17 +15,25 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   }) {
   const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number, source: 'user' | 'server' }[]>([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
 
   // Reset loaded status upon change in markov chain specification
   useEffect(() => {
     setLoaded(false);
-    setLoadedChainList([]);
   }, [selectedChains.length, ngramLength, setLoaded, setLoadedChainList]);
 
+  // Reset loading status helper states if loaded is set to false
+  useEffect(() => {
+    if (!loaded) {
+      setLoading(false);
+      setLoadedChainList([]);
+    }
+  }, [loaded]);
 
-  const handleLoadChain = async () => {
-    setLoaded(false);
+
+  const handleLoadChains = async () => {
+    setLoading(true);
     if (selectedChains.length > 0) {
       const newChain = new WasmMarkovChain(ngramLength);
       for (const chainObject of selectedChains) {
@@ -69,7 +77,9 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
             key={`${c.name}${c.source}`}
             changeWeight={changeChainWeight(c.name, c.source)}
             removeChain={() => removeChain(c.name, c.source)}
-            loadedChainList={loadedChainList} />
+            loadedChainList={loadedChainList}
+            loading={loading}
+          />
         )}
 
         <AddChain {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }} />
@@ -85,7 +95,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
           </select>
         </div>
 
-        {selectedChains.length > 0 && <Button onClick={() => handleLoadChain()}>
+        {selectedChains.length > 0 && <Button onClick={handleLoadChains}>
           {loaded ? 'Reset Chain' : 'Click to Load'}
         </Button>}
       </div>
