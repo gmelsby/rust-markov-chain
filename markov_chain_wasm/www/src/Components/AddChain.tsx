@@ -123,10 +123,10 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
                   onChange={e => {
                     setChainOption(e.target.value);
                   }}>
-                  <optgroup label="User-Generated">
+                  {localChainList.length && <optgroup label="User-Generated">
                     {localChainList.filter(c => !selectedChains.filter(ch => ch.source === "user").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}user`} value={`${chain} (user)`}>{chain}</option>)}
-                  </optgroup>
-                  <optgroup label="From Server">
+                  </optgroup>}
+                  <optgroup label={localChainList.length ? 'From Server' : 'Chains'}>
                     {serverChainList.filter(c => !selectedChains.filter(ch => ch.source === "server").map(ch => ch.name).includes(c)).map(chain => <option key={`${chain}server`}>{chain}</option>)}
                   </optgroup>
                 </select >

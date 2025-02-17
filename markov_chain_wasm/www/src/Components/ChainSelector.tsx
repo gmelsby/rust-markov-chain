@@ -64,7 +64,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
     }
   };
 
-  // Removes a chain with passed in name from selectedChains
+  // Removes a chain with passed in name and source from selectedChains
   const removeChain = (name: string, source: string) => {
     setSelectedChains(chains => chains.filter(c => !(c.name === name && c.source === source)));
   }
