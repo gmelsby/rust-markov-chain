@@ -212,7 +212,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
         </div>}
       </div>
       <div className={`bg-neutral-700 xl:rounded-tr-2xl transition-all duration-300 ease-in-out ${generating ? 'h-0' : 'h-16'}`}>
-        <WordButtons buttonList={wordButtonList} />
+        <WordButtons {...{ handleBackspace }} buttonList={wordButtonList} />
       </div>
     </>
   )

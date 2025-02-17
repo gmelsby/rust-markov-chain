@@ -7,9 +7,10 @@ interface ButtonProps {
   key: string,
 }
 
-function WordButtons({ buttonList }:
+function WordButtons({ buttonList, handleBackspace }:
   {
     buttonList: ButtonProps[],
+    handleBackspace: () => void,
   }) {
   const [dragging, setDragging] = useState(false);
   const [overflowing, setOverflowing] = useState(false);
@@ -90,7 +91,6 @@ function WordButtons({ buttonList }:
   }, []);
 
   const handleKeydown = useCallback((e: KeyboardEvent) => {
-    console.log(e.key);
     // Only do something if no modifiers are held
     if (e.metaKey || e.altKey || e.shiftKey || e.ctrlKey) {
       return;
@@ -116,11 +116,15 @@ function WordButtons({ buttonList }:
           i === null ? 0 : Math.min(buttonList.length - 1, i + 1)
         );
         break;
+      case 'Backspace':
+        e.preventDefault();
+        handleBackspace();
+        break;
       case 'Escape':
         setSelectedIndex(null);
         break;
     }
-  }, [selectedIndex, buttonList]);
+  }, [selectedIndex, buttonList, handleBackspace]);
 
 
   // Set up event listeners for keyboard controls
