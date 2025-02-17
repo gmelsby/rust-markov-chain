@@ -17,6 +17,9 @@ const NO_SPACE_AFTER_TOKENS: &str = "<([{\n";
 // Quotation marks that should have a space before them in the dict if they start a word
 const QUOTES: &str = "\"“”'’‘`";
 
+// Special token for padding start and end of chains
+const STARTENDTOKEN: &str = "*****";
+
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]
 struct ChainEncoding {
@@ -43,9 +46,10 @@ impl MarkovChain {
     // Constructor to create a new MarkovChain
     pub fn new(ngram_length: usize) -> MarkovChain {
         let mut token_dict = TokenDict::new();
-        let newline_int = token_dict.add_token(&"\n".to_string());
+        _ = token_dict.add_token(&"\n".to_string());
+        let startend_token = token_dict.add_token(&STARTENDTOKEN.to_string());
         let mut current_ngram = Vec::with_capacity(ngram_length);
-        current_ngram.resize(ngram_length, newline_int);
+        current_ngram.resize(ngram_length, startend_token);
 
         MarkovChain {
             ngram_length,
@@ -60,7 +64,7 @@ impl MarkovChain {
         self.ngram_distribution.len()
     }
 
-    // Inserts appropriate mapping between ngram and current token into HashMap
+    // Inserts appropriate mapping between ngram and current token into HashMap in place
     fn insert_into_ngram_dict(
         map: &mut HashMap<Vec<usize>, Vec<usize>>,
         prior_ngram: Vec<usize>,
@@ -85,6 +89,16 @@ impl MarkovChain {
         prior_tokens[prior_tokens_length - 1] = token;
     }
 
+    // Inserts token into passed-in hashmap and pushes it to prior tokens
+    fn insert_and_push_token(
+        ngram_dict: &mut HashMap<Vec<usize>, Vec<usize>>,
+        prior_tokens: &mut Vec<usize>,
+        token: usize,
+    ) {
+        Self::insert_into_ngram_dict(ngram_dict, prior_tokens.clone(), token);
+        Self::push_to_prior_tokens(prior_tokens, token);
+    }
+
     pub fn load_lines<I>(&mut self, lines: I, mode: LoadMode)
     where
         I: IntoIterator<Item = Result<String, Error>>,
@@ -94,25 +108,22 @@ impl MarkovChain {
         // Set prior tokens the start of the text to be newlines
         let mut prior_tokens = Vec::with_capacity(self.ngram_length);
         let newline_token = self.get_newline_token();
+        let startend_token = self.get_startend_token();
 
-        prior_tokens.resize(self.ngram_length, newline_token);
+        // Pad front of text with STARTEND tokens and newline
+        prior_tokens.resize(self.ngram_length, startend_token);
+        Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
 
         for line in lines.into_iter().flatten() {
             // If we take in an empty string and mode is PreserveDoubleNewlines, handle and continue looping
             if line.trim().is_empty() && mode == LoadMode::PreserveDoubleNewlines {
                 // Add extra newline if the prior token was not a newline
                 if prior_tokens.last().cloned().unwrap() != newline_token {
-                    Self::insert_into_ngram_dict(
-                        &mut ngram_dict,
-                        prior_tokens.clone(),
-                        newline_token,
-                    );
-                    Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+                    Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
                 }
 
                 // Add newline when we encounter empty line
-                Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
-                Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+                Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
 
                 continue;
             }
@@ -169,26 +180,20 @@ impl MarkovChain {
                 // Insert all tokens that made up our string
                 for token in tokens.iter() {
                     let token_int = self.token_dict.add_token(token);
-                    Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), token_int);
-                    Self::push_to_prior_tokens(&mut prior_tokens, token_int);
+                    Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, token_int);
                 }
             }
 
             // Add newline on end of line if we are preserving newlines
             if mode == LoadMode::PreserveAllNewlines {
-                Self::insert_into_ngram_dict(&mut ngram_dict, prior_tokens.clone(), newline_token);
-                Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+                Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
             }
         }
 
-        // Pad end of text with newlines so at worst case it will wrap around to the start of text
+        // Pad end of text with newline and STARTEND so at worst case it will wrap around to the start of text
+        Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
         for _ in 0..self.ngram_length {
-            Self::insert_into_ngram_dict(
-                &mut ngram_dict,
-                prior_tokens.clone(),
-                self.get_newline_token(),
-            );
-            Self::push_to_prior_tokens(&mut prior_tokens, newline_token);
+            Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, startend_token);
         }
 
         // Convert ngram_dict to normalized probability distribution for ngram_distribution
@@ -337,6 +342,14 @@ impl MarkovChain {
         return self
             .token_dict
             .convert_string_to_int(&"\n".to_string())
+            .expect("Newline does not exist in token_dict");
+    }
+
+    // Returns int representation of STARTEND token
+    fn get_startend_token(&self) -> usize {
+        return self
+            .token_dict
+            .convert_string_to_int(&STARTENDTOKEN.to_string())
             .expect("Newline does not exist in token_dict");
     }
 

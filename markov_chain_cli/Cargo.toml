@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-markov_chain = { version = "0.1.0", path = "../markov_chain" }
+markov_chain = { version = "0.1.1", path = "../markov_chain" }
