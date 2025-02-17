@@ -5,12 +5,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { WasmMarkovChain, JsLoadMode } from 'markov_chain_wasm';
 import TextInput from './TextInput';
 
-function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersion: string }) {
+function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
+  {
+    back: () => void,
+    exit: () => void,
+    chainVersion: string
+    pushUserChain: (name: string) => void;
+
+  }) {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [chainName, setChainName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loadMode, setLoadMode] = useState<'PreserveAllNewlines' | 'PreserveDoubleNewlines'>('PreserveDoubleNewlines');
+  const [creating, setCreating] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -63,6 +71,8 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
     if (!file || chainName === "") {
       return;
     }
+    setCreating(true);
+
     const reader = new FileReader();
     reader.onload = async () => {
       const arrayBuffer = reader.result as ArrayBuffer;
@@ -79,33 +89,40 @@ function FileDragAndDrop({ exit, chainVersion }: { exit: () => void, chainVersio
       lengthThreeChain.create_from_file(uint8Array, jsLoadMode);
       await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', chainName);
 
+      pushUserChain(chainName);
       exit();
 
     }
 
     reader.readAsArrayBuffer(file);
-  }, [chainName, chainVersion, exit, file, loadMode]);
+  }, [chainName, chainVersion, exit, file, loadMode, pushUserChain]);
 
   return (
     <>
       <div className="mt-2 ml-2">
-        <Button size="sm" use="remove" onClick={file ? () => setFile(null) : exit}>Back</Button>
+        <Button size="sm" use="remove" onClick={file ? () => setFile(null) : back}>Back</Button>
       </div>
       {file ?
-        <>
+        creating ?
+
           <div className="flex flex-col justify-evenly items-center m-2">
-            <TextInput value={chainName} setValue={setChainName} />
-            <select
-              className='h-8 m-2 text-sm font-medium items-center justify-center rounded-md bg-neutral-950 px-4 text-neutral-50 hover:bg-blue-950 cursor-pointer'
-              value={loadMode} onChange={e => setLoadMode(e.target.value as 'PreserveAllNewlines' | 'PreserveDoubleNewlines')}>
-              <option value='PreserveDoubleNewlines'>Ignore single '\n' (default)</option>
-              <option value='PreserveAllNewlines'>Include single '\n'</option>
-            </select>
-            <div className='m-2'>
-              <Button size='sm' onClick={createChain}>Generate chain</Button>
-            </div>
+            <h3 className='m-2 text-center font-medium'>Creating {chainName}...</h3>
           </div>
-        </>
+          :
+          <>
+            <div className="flex flex-col justify-evenly items-center m-2">
+              <TextInput value={chainName} setValue={setChainName} />
+              <select
+                className='h-8 m-2 text-sm font-medium items-center justify-center rounded-md bg-neutral-950 px-4 text-neutral-50 hover:bg-blue-950 cursor-pointer'
+                value={loadMode} onChange={e => setLoadMode(e.target.value as 'PreserveAllNewlines' | 'PreserveDoubleNewlines')}>
+                <option value='PreserveDoubleNewlines'>Ignore single '\n' (default)</option>
+                <option value='PreserveAllNewlines'>Include single '\n'</option>
+              </select>
+              <div className='m-2'>
+                <Button size='sm' onClick={createChain}>Generate chain</Button>
+              </div>
+            </div>
+          </>
         :
         <>
 

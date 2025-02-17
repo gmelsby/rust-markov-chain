@@ -97,6 +97,11 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
     setUiState('icon');
   }, [selectedChains.length]);
 
+  // For use with FileDragAndDrop
+  const pushUserChain = (name: string) => {
+    setSelectedChains(s => [...s.filter(c => !(c.name === name && c.source === 'user')), { name: name, source: 'user', weight: 1 }]);
+  }
+
 
   return (
     <div className="border-2 border-neutral-600 bg-neutral-800/50 border-solid rounded-2xl min-h-40 min-w-30 m-1.5 xl:m-2 flex flex-col"
@@ -104,7 +109,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
     >
       {uiState === 'create'
         ?
-        <FileDragAndDrop exit={() => setUiState('select')} {...{ chainVersion }} />
+        <FileDragAndDrop exit={() => setUiState('icon')} back={() => setUiState('select')} {...{ chainVersion, pushUserChain }} />
         :
         uiState == 'select'
           ?
