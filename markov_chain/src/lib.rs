@@ -467,6 +467,7 @@ impl MarkovChain {
     // If it cannot find a newline, returns current ngram + arbitrary next token
     pub fn seek_next_word_after_newline(&mut self) -> Vec<(String, usize)> {
         let newline_token = self.get_newline_token();
+        let startend_token = self.get_startend_token();
         for _ in 0..1000 {
             // Look at next possible tokens
             let candidates = self.peek_next_tokens(15);
@@ -477,8 +478,14 @@ impl MarkovChain {
                 .cloned()
                 .collect();
 
-            // If last token was a newline and we have a non-newline candidate, return prior ngram + a non-newline candidate
-            if !non_newline_candidates.is_empty()
+            let non_newline_startend_candidates: Vec<(String, usize)> = non_newline_candidates
+                .iter()
+                .filter(|&(_, tk_int)| *tk_int != startend_token)
+                .cloned()
+                .collect();
+
+            // If last token was a newline and we have a non-newline/startend candidate, return prior ngram + a non-newline/startend candidate
+            if !non_newline_startend_candidates.is_empty()
                 && self.current_ngram.last().cloned().unwrap() == newline_token
             {
                 let prior_ngram_result: Result<Vec<(String, usize)>, Error> = self
@@ -487,7 +494,7 @@ impl MarkovChain {
                     .map(|i| self.token_dict.convert_int_to_string(*i).map(|s| (s, *i)))
                     .collect();
                 let mut prior_ngram_words = prior_ngram_result.unwrap();
-                prior_ngram_words.push(non_newline_candidates[0].clone());
+                prior_ngram_words.push(non_newline_startend_candidates[0].clone());
                 return prior_ngram_words;
             }
 
