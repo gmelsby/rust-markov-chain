@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
 import { MdAddCircle, MdUploadFile } from 'react-icons/md';
 import FileDragAndDrop from './FileDragAndDrop';
-import { openDB } from 'idb';
 import { IconContext } from 'react-icons';
+import useChains from '../Hooks/useChains';
 
 function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }:
   {
@@ -14,50 +14,13 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
   }) {
 
 
-  const [serverChainList, setServerChainList] = useState<string[]>([]);
-  const [localChainList, setLocalChainList] = useState<string[]>([]);
   const [chainOption, setChainOption] = useState<string>("");
-  const [uiState, setUiState] = useState<"icon" | "select" | "create">("icon");
+  const [uiState, setUiState] = useState<'icon' | 'select' | 'create'>('icon');
+  const serverChainList = useChains('server', chainVersion);
+  const localChainList = useChains('user', chainVersion, uiState !== 'create');
 
   // For handling onClick event
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Fetch list of chains from server
-  useEffect(() => {
-    const fetchChains = async () => {
-      const chainResponse = await fetch(`chains/${chainVersion}/`);
-      const chainObjects = await chainResponse.json();
-      setServerChainList(chainObjects.map((o: { name: string }) => o.name));
-    }
-
-    fetchChains();
-  }, [chainVersion]);
-
-  // Fetch list of chains from indexedDb
-  useEffect(() => {
-    const getChains = async () => {
-      const db = await openDB(`chains/${chainVersion}`, 1, {
-        upgrade(db) {
-          // Handle creating object stores if they don't exist
-          if (!db.objectStoreNames.contains('2')) {
-            db.createObjectStore('2');
-          }
-          if (!db.objectStoreNames.contains('3')) {
-            db.createObjectStore('3');
-          }
-        }
-      });
-      const transaction = db.transaction('3', 'readonly');
-      const store = transaction.objectStore('3');
-      const chains = await store.getAllKeys();
-      setLocalChainList(chains.map(c => c.toString()));
-    }
-
-    if (uiState === 'select') {
-      getChains();
-    };
-  }, [chainVersion, uiState]);
-
 
   // Sets the chainOption to the first possible choice
   useEffect(() => {
