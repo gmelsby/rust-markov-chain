@@ -127,22 +127,22 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
         <>
 
           <div
-            className={`border-2 border-neutral-500 border-dotted rounded-2xl flex-grow m-2 ${dragging ? 'bg-blue-950' : ''}`}
+            className={`border-2 border-neutral-500 border-dotted rounded-2xl flex-grow cursor-pointer flex flex-col justify-evenly items-center m-2 p-2 ${dragging ? 'bg-blue-950' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onClick={handleInputClick}
           >
-            <div onClick={handleInputClick} className="cursor-pointer flex flex-col justify-evenly items-center m-2">
-              <h3>Drag and drop a .txt file here</h3>
-              <div className="my-2">
-                <IconContext.Provider value={{ size: '40' }}>
-                  <MdUploadFile />
-                </IconContext.Provider>
-              </div>
-              <h3>Or click to select from file browser</h3>
+            <h3 className="m-2">Drag and drop a .txt file here</h3>
+            <div className="my-2">
+              <IconContext.Provider value={{ size: '40' }}>
+                <MdUploadFile />
+              </IconContext.Provider>
             </div>
-            <input type="file" ref={fileInputRef} onChange={handleFileSelectChange} className="hidden" />
+            <h3 className="m-2">Or click to select from file browser</h3>
+
           </div>
+          <input type="file" ref={fileInputRef} onChange={handleFileSelectChange} className="hidden" />
         </>
       }
     </>
