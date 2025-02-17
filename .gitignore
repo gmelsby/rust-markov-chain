@@ -2,8 +2,8 @@
 texts
 *.bin
 */chains
-markov_chain/Cargo.lock
 */pkg
 */node_modules
 chains
 .env
+dist

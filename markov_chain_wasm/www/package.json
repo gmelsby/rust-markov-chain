@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.2",
+    "idb": "^8.0.2",
     "markov_chain_wasm": "file:../pkg",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

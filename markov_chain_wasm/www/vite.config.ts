@@ -13,9 +13,17 @@ export default defineConfig({
   server: {
     proxy: {
       '/chains/': {
-        target: 'http://localhost:8080/',
+        target: 'http://localhost:8081/',
         changeOrigin: true,
       }
     },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  build: {
+    target: 'esnext'
   }
 })
