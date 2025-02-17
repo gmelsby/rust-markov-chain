@@ -1,5 +1,5 @@
 import Button from './Button';
-import { MdUploadFile } from 'react-icons/md';
+import { MdUploadFile, MdWarning } from 'react-icons/md';
 import { IconContext } from 'react-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WasmMarkovChain, JsLoadMode } from 'markov_chain_wasm';
@@ -111,6 +111,12 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
           :
           <>
             <div className="flex flex-col justify-evenly items-center m-2">
+              {!file.name.endsWith('.txt') &&
+                <div className="bg-red-500/50 px-3 rounded-2xl font-medium mx-2 flex flex-row items-center justify-center">
+                  <MdWarning />
+                  <h3 className="ml-2">File extension is not .txt</h3>
+                </div>
+              }
               <TextInput value={chainName} setValue={setChainName} />
               <select
                 className='h-8 m-2 text-sm font-medium items-center justify-center rounded-md bg-neutral-950 px-4 text-neutral-50 hover:bg-blue-950 cursor-pointer'
