@@ -101,7 +101,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
         {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
           {loaded ? 'Reset Output' : 'Click to Load'}
         </Button>}
-        {loading && <ProgressBar stepCount={selectedChains.length} currentStep={loadedChainList.length} />}
+        <ProgressBar stepCount={selectedChains.length} currentStep={loadedChainList.length} active={loading} />
       </div>
     </div>
   )
