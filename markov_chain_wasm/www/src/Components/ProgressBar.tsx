@@ -37,9 +37,9 @@ function ProgressBar({ stepCount, currentStep, message, active }: { stepCount: n
   }, [progress])
 
   return (
-    <div className={`transition-all ease-in-out ${active ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`transition-all ease-in-out duration-200 ${active ? 'opacity-75' : 'opacity-0'}`}>
       <div className='w-full bg-neutral-900 rounded-full h-3'>
-        <div className='bg-blue-700 h-3 rounded-full transition-all duration-100 animate-pulse' style={{ width: roundedProgressPercent }} />
+        <div className='bg-blue-700 h-3 rounded-full transition-all duration-500 animate-pulse' style={{ width: roundedProgressPercent }} />
       </div>
       {message !== undefined && <p>{message}</p>}
     </div>

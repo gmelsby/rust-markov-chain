@@ -4,6 +4,7 @@ import { IconContext } from 'react-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WasmMarkovChain, JsLoadMode } from 'markov_chain_wasm';
 import TextInput from './TextInput';
+import ProgressBar from './ProgressBar';
 
 function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
   {
@@ -19,6 +20,7 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
   const [file, setFile] = useState<File | null>(null);
   const [loadMode, setLoadMode] = useState<'PreserveAllNewlines' | 'PreserveDoubleNewlines'>('PreserveDoubleNewlines');
   const [creating, setCreating] = useState(false);
+  const [creationStep, setCreationStep] = useState<number>(0);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -67,16 +69,19 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
   }
 
   // Handles creation of chain
-  const createChain = useCallback(() => {
+  const createChain = useCallback(async () => {
     if (!file || chainName === "") {
       return;
     }
     setCreating(true);
+    setCreationStep(1);
 
     const reader = new FileReader();
     reader.onload = async () => {
       const arrayBuffer = reader.result as ArrayBuffer;
       const uint8Array = new Uint8Array(arrayBuffer);
+
+      setCreationStep(2);
 
       const jsLoadMode = loadMode === 'PreserveAllNewlines' ? JsLoadMode.PreserveAllNewlines : JsLoadMode.PreserveDoubleNewlines;
 
@@ -85,9 +90,12 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
       lengthTwoChain.find_paragraph_start();
       await lengthTwoChain.write_chain_to_indexedb(`chains/${chainVersion}`, '2', chainName);
 
+      setCreationStep(3);
+
       const lengthThreeChain = new WasmMarkovChain(3);
       lengthThreeChain.create_from_file(uint8Array, jsLoadMode);
       await lengthThreeChain.write_chain_to_indexedb(`chains/${chainVersion}`, '3', chainName);
+      setCreationStep(4);
 
       pushUserChain(chainName);
       exit();
@@ -107,6 +115,9 @@ function FileDragAndDrop({ back, exit, chainVersion, pushUserChain }:
 
           <div className="flex flex-col justify-evenly items-center m-2">
             <h3 className='m-2 text-center font-medium'>Creating {chainName}...</h3>
+            <div className='w-50 m-2'>
+              <ProgressBar stepCount={4} currentStep={creationStep} active={true} />
+            </div>
           </div>
           :
           <>
