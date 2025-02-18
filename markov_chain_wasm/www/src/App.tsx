@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
 import ChainSelector from './Components/ChainSelector';
+import TopBar from './Components/TopBar';
 
 const CHOICES = 15;
 const CHAIN_VERSION = 'v2';
@@ -83,8 +84,8 @@ function App() {
 
   return (
     <div className="">
-      <div className="bg-neutral-700">
-        <h1>Markov Chain</h1>
+      <TopBar />
+      <div className="bg-neutral-700 z-10 sticky">
         <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
       </div>
       <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
@@ -95,7 +96,7 @@ function App() {
         </div>
       </div>
       <div className='h-10 mb-5' ref={paddingDivRef}></div>
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto">
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto z-0">
         {loaded && <OutputControlPanel {...{ markovChain, ngramLength, output, setOutput, loaded, autoScroll, setAutoScroll }} choices={CHOICES} />}
       </div>
     </div>
