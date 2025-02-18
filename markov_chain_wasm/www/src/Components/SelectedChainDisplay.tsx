@@ -50,7 +50,7 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
           value={chain.weight}
           onChange={e => changeWeight(Number(e.target.value))}
         />
-        <h3 className="text-center my-2">Weight: <span className="font-bold">{chain.weight}</span></h3>
+        <h3 className="text-center my-2">Weight: <span className="font-bold">{chain.weight.toFixed(1)}</span></h3>
 
       </div>
 

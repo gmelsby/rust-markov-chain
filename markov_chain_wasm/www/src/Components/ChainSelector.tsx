@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import SelectedChainDisplay from './SelectedChainDisplay';
 import Button from './Button';
 import AddChain from './AddChain';
+import ProgressBar from './ProgressBar';
 
 function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion, resetChain }:
   {
@@ -52,6 +53,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
       }
       setMarkovChain(newChain);
       setLoaded(true);
+      setLoading(false);
     }
   };
 
@@ -99,6 +101,7 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
         {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
           {loaded ? 'Reset Output' : 'Click to Load'}
         </Button>}
+        {loading && <ProgressBar progress={Math.max(5, loadedChainList.length * 100 / selectedChains.length)} />}
       </div>
     </div>
   )
