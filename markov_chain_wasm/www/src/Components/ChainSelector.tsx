@@ -72,14 +72,14 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   return (
     <div>
       <div className="flex space-x-1.5 flex-wrap">
-        {selectedChains.map(c =>
+        {selectedChains.map((c, i) =>
           <SelectedChainDisplay
             chain={c}
             key={`${c.name}${c.source}`}
             changeWeight={changeChainWeight(c.name, c.source)}
             removeChain={() => removeChain(c.name, c.source)}
             loadedChainList={loadedChainList}
-            loading={loading}
+            loading={loading && i === loadedChainList.length}
           />
         )}
 

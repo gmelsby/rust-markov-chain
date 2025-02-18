@@ -25,13 +25,14 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
         <div className="mr-3">
 
           <IconContext.Provider value={{ size: '20' }}>
-            {loading ?
+            {
               loadedChainList.includes(`${chain.name}-${chain.source}`) ?
                 <MdCheck />
                 :
-                <MdOutlineSync className='animate-spin' />
-              :
-              null}
+                loading ?
+                  <MdOutlineSync className='animate-spin' />
+                  :
+                  null}
           </IconContext.Provider>
         </div>
       </div>
