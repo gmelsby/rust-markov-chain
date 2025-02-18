@@ -13,7 +13,7 @@ use std::io::{self};
 // Characters that should not have a space inserted before
 const NO_SPACE_BEFORE_TOKENS: &str = ">)]}:.,!?;\n";
 // Characters that should not have a space inserted after
-const NO_SPACE_AFTER_TOKENS: &str = "<([{\n";
+const NO_SPACE_AFTER_TOKENS: &str = "$<([{\n";
 // Characters that appear on both sides of words that should have a space before them in the dict if they start a word
 const QUOTES: &str = "\"“”'’‘`_-";
 
