@@ -1,6 +1,6 @@
 function TopBar() {
   return (
-    <div className={`sticky top-0 w-full h-12 z-20 bg-neutral-900`}>
+    <div className={`sticky top-0 w-full h-12 z-30 bg-neutral-900`}>
       <div className="flex flex-row items-center justify-between h-full">
         <div
           className="cursor-pointer mx-3 lg:mx-4"
