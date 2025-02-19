@@ -1,24 +1,32 @@
-import { WasmMarkovChain } from 'markov_chain_wasm';
-import { useState, useEffect } from 'react';
-import SelectedChainDisplay from './SelectedChainDisplay';
-import Button from './Button';
-import AddChain from './AddChain';
-import ProgressBar from './ProgressBar';
+import { WasmMarkovChain } from "markov_chain_wasm";
+import { useState, useEffect } from "react";
+import SelectedChainDisplay from "./SelectedChainDisplay";
+import Button from "./Button";
+import AddChain from "./AddChain";
+import ProgressBar from "./ProgressBar";
 
-function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion, resetChain }:
-  {
-    setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
-    ngramLength: number,
-    setNgramLength: React.Dispatch<React.SetStateAction<number>>,
-    loaded: boolean,
-    setLoaded: React.Dispatch<React.SetStateAction<boolean>>,
-    chainVersion: string,
-    resetChain: () => void,
-  }) {
-  const [selectedChains, setSelectedChains] = useState<{ name: string, weight: number, source: 'user' | 'server' }[]>([]);
+function ChainControlPanel({
+  setMarkovChain,
+  ngramLength,
+  setNgramLength,
+  loaded,
+  setLoaded,
+  chainVersion,
+  resetChain,
+}: {
+  setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>;
+  ngramLength: number;
+  setNgramLength: React.Dispatch<React.SetStateAction<number>>;
+  loaded: boolean;
+  setLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  chainVersion: string;
+  resetChain: () => void;
+}) {
+  const [selectedChains, setSelectedChains] = useState<
+    { name: string; weight: number; source: "user" | "server" }[]
+  >([]);
   const [loadedChainList, setLoadedChainList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-
 
   // Reset loaded status upon change in markov chain specification
   useEffect(() => {
@@ -33,7 +41,6 @@ function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded
     }
   }, [loaded]);
 
-
   const handleLoadChains = async () => {
     setLoading(true);
     if (selectedChains.length > 0) {
@@ -41,15 +48,26 @@ function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded
       for (const chainObject of selectedChains) {
         // Switch statement for determining where to load chain from
         switch (chainObject.source) {
-          case 'server':
+          case "server":
             // Necessary to do each chain one at a time
-            await newChain.load_chain_from_server(`/chains/${chainVersion}/${chainObject.name}/${ngramLength}`, chainObject.weight);
+            await newChain.load_chain_from_server(
+              `/chains/${chainVersion}/${chainObject.name}/${ngramLength}`,
+              chainObject.weight,
+            );
             break;
-          case 'user':
+          case "user":
             // Necessary to do each chain one at a time
-            await newChain.load_chain_from_indexeddb(`chains/${chainVersion}`, ngramLength.toString(), chainObject.name, chainObject.weight);
+            await newChain.load_chain_from_indexeddb(
+              `chains/${chainVersion}`,
+              ngramLength.toString(),
+              chainObject.name,
+              chainObject.weight,
+            );
         }
-        setLoadedChainList(l => [...l, `${chainObject.name}-${chainObject.source}`]);
+        setLoadedChainList((l) => [
+          ...l,
+          `${chainObject.name}-${chainObject.source}`,
+        ]);
       }
       setMarkovChain(newChain);
       setLoaded(true);
@@ -60,22 +78,30 @@ function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded
   // Curried function that changes the weight of a selected chain
   const changeChainWeight = (name: string, source: string) => {
     return (newWeight: number) => {
-      setSelectedChains(chains => chains.map(chain => chain.name === name && chain.source === source ? { ...chain, weight: newWeight } : chain));
+      setSelectedChains((chains) =>
+        chains.map((chain) =>
+          chain.name === name && chain.source === source
+            ? { ...chain, weight: newWeight }
+            : chain,
+        ),
+      );
       setLoaded(false);
       setLoadedChainList([]);
-    }
+    };
   };
 
   // Removes a chain with passed in name and source from selectedChains
   const removeChain = (name: string, source: string) => {
-    setSelectedChains(chains => chains.filter(c => !(c.name === name && c.source === source)));
-  }
+    setSelectedChains((chains) =>
+      chains.filter((c) => !(c.name === name && c.source === source)),
+    );
+  };
 
   return (
     <>
-      <div className="flex flex-wrap">
-        <div className="flex space-x-1.5 flex-wrap border-2 border-neutral-500 rounded-2xl">
-          {selectedChains.map((c, i) =>
+      <div className="flex flex-wrap m-5 mb-0 border-4 border-neutral-700 rounded-2xl bg-neutral-900/50 justify-between gap-1">
+        <div className="flex gap-1 flex-wrap shrink grow border-2 border-neutral-500 rounded-2xl bg-neutral-700 m-4 min-w-0">
+          {selectedChains.map((c, i) => (
             <SelectedChainDisplay
               chain={c}
               key={`${c.name}${c.source}`}
@@ -84,30 +110,41 @@ function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded
               loadedChainList={loadedChainList}
               loading={loading && i === loadedChainList.length}
             />
-          )}
+          ))}
 
-          <AddChain {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }} />
+          <AddChain
+            {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }}
+          />
         </div>
-        <div className="flex flex-col justify-around border-2 rounded-2xl border-neutral-500">
+        <div className="flex flex-col shrink-0 grow-0 justify-around border-2 rounded-2xl border-neutral-500">
           <div>
             <h3>Ngram Length: </h3>
             <select
-              className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
-              value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+              className="h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer"
+              value={ngramLength}
+              onChange={(e) => setNgramLength(Number(e.target.value))}
+            >
               <option value="2">2</option>
               <option value="3">3</option>
             </select>
           </div>
 
-          {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
-            {loaded ? 'Reset Output' : 'Click to Load'}
-          </Button>}
+          {selectedChains.length > 0 && (
+            <Button onClick={loaded ? resetChain : handleLoadChains}>
+              {loaded ? "Reset Output" : "Click to Load"}
+            </Button>
+          )}
         </div>
-      </div >
-      <ProgressBar stepCount={selectedChains.length} currentStep={loadedChainList.length} active={loading} />
+      </div>
+      <div className="mx-7">
+        <ProgressBar
+          stepCount={selectedChains.length}
+          currentStep={loadedChainList.length}
+          active={loading}
+        />
+      </div>
     </>
-  )
-
+  );
 }
 
 export default ChainControlPanel;

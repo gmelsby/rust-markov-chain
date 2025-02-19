@@ -85,7 +85,7 @@ function App() {
   return (
     <div className="">
       <TopBar />
-      <div className="bg-neutral-700 z-10 sticky">
+      <div className="z-10 sticky">
         <ChainControlPanel {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
       </div>
       <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
