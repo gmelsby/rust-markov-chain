@@ -104,7 +104,7 @@ function ChainControlPanel({
       <div className="flex flex-wrap mb-0 sm:p-5 justify-between">
         <div className="flex grow flex-wrap sm:flex-nowrap border-2 border-neutral-500/60 rounded-2xl bg-neutral-700/85 m-4 min-w-0 justify-center">
           <div
-            className="shrink-0 bg-neutral-950/90 flex flex-col mx:2 sm:mx-0 sm:my-3 justify-center
+            className="shrink-0 sm:bg-neutral-950/90 flex flex-col mx:2 sm:mx-0 sm:my-3 justify-center
             rounded-br-full sm:rounded-tr-full rounded-tr-none sm:rounded-bl-none rounded-bl-full w-[calc(100%-1rem)] sm:w-8"
           >
             <div className="sm:[writing-mode:vertical-lr] sm:rotate-180 flex items-center justify-center">
