@@ -162,8 +162,8 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
 
   return (
     <>
-      <div className="flex flex-row justify-between">
-        <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl">
+      <div className="flex flex-row justify-between translate-y-1 z-10">
+        <div className="p-2 inline-flex justify-start space-x-1 bg-neutral-700 xl:rounded-t-2xl rounded-tr-2xl border-neutral-800 border-l-0 xl:border-l-4 border-4 border-b-0">
           <Button
             size='sm'
             onClick={handleGenerateToggle}
@@ -211,7 +211,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
           <MdArrowDownward />
         </div>}
       </div>
-      <div className={`bg-neutral-700 xl:rounded-tr-2xl transition-all duration-300 ease-in-out ${generating ? 'h-0' : 'h-16'}`}>
+      <div className={`bg-neutral-700 border-neutral-800 border-t-4 border-b-0 xl:border-l-4 xl:border-r-4 xl:rounded-tr-2xl transition-all duration-300 ease-in-out ${generating ? 'h-0' : 'h-17'}`}>
         <WordButtons {...{ handleBackspace }} buttonList={wordButtonList} />
       </div>
     </>

@@ -85,11 +85,11 @@ function App() {
   return (
     <div className="">
       <TopBar />
-      <div className="z-10 sticky">
+      <div className="z-20 sticky">
         <ChainControlPanel {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
       </div>
       <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
-        <div className={'mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40'}>
+        <div className={'mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/80'}>
           <p>
             {output.map((tk) => tk.str).join("")}
           </p>
