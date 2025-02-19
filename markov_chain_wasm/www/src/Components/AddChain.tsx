@@ -98,7 +98,7 @@ function AddChain({
 
   return (
     <div
-      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 sm:m-4 my-1.5 sm:mx-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
+      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 sm:m-4 my-1.5 mx-1 sm:mx-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
       ref={containerRef}
     >
       {uiState === "create" ? (
@@ -112,75 +112,75 @@ function AddChain({
           <h3 className="m-2 font-bold">Add Chain</h3>
           {serverChainList.length + localChainList.length !==
             selectedChains.length && (
-            <div>
-              <select
-                className="h-12 max-w-50 items-center justify-center rounded-md bg-neutral-950 px-2 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 my-2"
-                value={chainOption}
-                onChange={(e) => {
-                  setChainOption(e.target.value);
-                }}
-              >
-                {localChainList.length && (
-                  <optgroup label="User-Generated">
-                    {localChainList
+              <div>
+                <select
+                  className="h-12 max-w-50 items-center justify-center rounded-md bg-neutral-950 px-2 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 my-2"
+                  value={chainOption}
+                  onChange={(e) => {
+                    setChainOption(e.target.value);
+                  }}
+                >
+                  {localChainList.length && (
+                    <optgroup label="User-Generated">
+                      {localChainList
+                        .filter(
+                          (c) =>
+                            !selectedChains
+                              .filter((ch) => ch.source === "user")
+                              .map((ch) => ch.name)
+                              .includes(c),
+                        )
+                        .map((chain) => (
+                          <option key={`${chain}user`} value={`${chain} (user)`}>
+                            {chain}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                  <optgroup
+                    label={localChainList.length ? "From Server" : "Chains"}
+                  >
+                    {serverChainList
                       .filter(
                         (c) =>
                           !selectedChains
-                            .filter((ch) => ch.source === "user")
+                            .filter((ch) => ch.source === "server")
                             .map((ch) => ch.name)
                             .includes(c),
                       )
                       .map((chain) => (
-                        <option key={`${chain}user`} value={`${chain} (user)`}>
-                          {chain}
-                        </option>
+                        <option key={`${chain}server`}>{chain}</option>
                       ))}
                   </optgroup>
-                )}
-                <optgroup
-                  label={localChainList.length ? "From Server" : "Chains"}
+                </select>
+                <Button
+                  onClick={() => {
+                    if (chainOption.length) {
+                      // Case where chain is user-generated
+                      if (chainOption.endsWith(" (user)")) {
+                        setSelectedChains((chains) => [
+                          ...chains,
+                          {
+                            name: chainOption.slice(0, -7),
+                            weight: 1,
+                            source: "user",
+                          },
+                        ]);
+                      }
+                      // Case where chain is on server
+                      else {
+                        setSelectedChains((chains) => [
+                          ...chains,
+                          { name: chainOption, weight: 1, source: "server" },
+                        ]);
+                      }
+                    }
+                  }}
                 >
-                  {serverChainList
-                    .filter(
-                      (c) =>
-                        !selectedChains
-                          .filter((ch) => ch.source === "server")
-                          .map((ch) => ch.name)
-                          .includes(c),
-                    )
-                    .map((chain) => (
-                      <option key={`${chain}server`}>{chain}</option>
-                    ))}
-                </optgroup>
-              </select>
-              <Button
-                onClick={() => {
-                  if (chainOption.length) {
-                    // Case where chain is user-generated
-                    if (chainOption.endsWith(" (user)")) {
-                      setSelectedChains((chains) => [
-                        ...chains,
-                        {
-                          name: chainOption.slice(0, -7),
-                          weight: 1,
-                          source: "user",
-                        },
-                      ]);
-                    }
-                    // Case where chain is on server
-                    else {
-                      setSelectedChains((chains) => [
-                        ...chains,
-                        { name: chainOption, weight: 1, source: "server" },
-                      ]);
-                    }
-                  }
-                }}
-              >
-                +
-              </Button>
-            </div>
-          )}
+                  +
+                </Button>
+              </div>
+            )}
           <div className="m-2">
             <Button size="sm" onClick={() => setUiState("create")}>
               <span className="flex items-center">
