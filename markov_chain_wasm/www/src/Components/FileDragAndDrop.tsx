@@ -180,7 +180,7 @@ function FileDragAndDrop({
       ) : (
         <>
           <div
-            className={`border-2 border-neutral-500 border-dotted rounded-2xl flex-grow cursor-pointer flex flex-col justify-evenly items-center m-2 p-2 ${dragging ? "bg-blue-950" : ""}`}
+            className={`border-2 text-center border-neutral-500 border-dotted rounded-2xl flex-grow cursor-pointer flex flex-col justify-evenly items-center m-2 p-2 ${dragging ? "bg-blue-950" : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}

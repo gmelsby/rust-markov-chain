@@ -98,7 +98,7 @@ function AddChain({
 
   return (
     <div
-      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 m-4 mx-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
+      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 sm:m-4 my-1.5 sm:mx-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
       ref={containerRef}
     >
       {uiState === "create" ? (
@@ -110,19 +110,11 @@ function AddChain({
       ) : uiState == "select" ? (
         <div className="flex flex-col items-center justify-evenly p-2 flex-grow">
           <h3 className="m-2 font-bold">Add Chain</h3>
-          <div className="m-2">
-            <Button size="sm" onClick={() => setUiState("create")}>
-              <span className="flex items-center">
-                <MdUploadFile className="mr-2" />
-                Create new chain from .txt file
-              </span>
-            </Button>
-          </div>
           {serverChainList.length + localChainList.length !==
             selectedChains.length && (
             <div>
               <select
-                className="h-12 max-w-54 items-center justify-center rounded-md bg-neutral-950 px-2 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 my-2"
+                className="h-12 max-w-50 items-center justify-center rounded-md bg-neutral-950 px-2 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 my-2"
                 value={chainOption}
                 onChange={(e) => {
                   setChainOption(e.target.value);
@@ -189,6 +181,14 @@ function AddChain({
               </Button>
             </div>
           )}
+          <div className="m-2">
+            <Button size="sm" onClick={() => setUiState("create")}>
+              <span className="flex items-center">
+                <MdUploadFile className="mr-2" />
+                Create from .txt file
+              </span>
+            </Button>
+          </div>
         </div>
       ) : (
         <div
