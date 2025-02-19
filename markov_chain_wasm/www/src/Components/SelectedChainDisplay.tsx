@@ -20,7 +20,7 @@ function SelectedChainDisplay({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-2xl m-2 p-2 border-2 min-w-0 shrink grow lg:grow-0 lg:max-w-xs border-neutral-800/80 bg-neutral-800/60 flex flex-col justify-between">
+    <div className="rounded-2xl m-4 mx-2 p-2 border-2 min-w-0 shrink grow lg:grow-0 lg:max-w-xs border-neutral-800/80 bg-neutral-800/60 flex flex-col justify-between">
       <div className="flex flex-row items-center justify-between">
         <div>
           <Button size="sm" use="remove" onClick={() => removeChain()}>

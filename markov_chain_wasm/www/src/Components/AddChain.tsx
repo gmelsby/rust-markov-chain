@@ -98,7 +98,7 @@ function AddChain({
 
   return (
     <div
-      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 m-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
+      className="border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl min-h-40 min-w-30 m-4 mx-2 flex flex-col grow lg:grow-0 lg:max-w-xs"
       ref={containerRef}
     >
       {uiState === "create" ? (
