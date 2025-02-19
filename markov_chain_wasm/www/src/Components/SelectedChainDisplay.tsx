@@ -17,8 +17,8 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
   }) {
 
   return (
-    <div className="rounded-2xl m-1 xl:m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800/60 max-w-xs flex-grow flex flex-col justify-between">
-      <div className="flex flex-row items-center justify-between">
+    <div className="rounded-2xl m-1 xl:m-2 p-2 max-w-xs border-2 border-neutral-800/80 bg-neutral-800/60 flex flex-col justify-between">
+      <div className="flex flex-row items-center justify-between max-w-xs">
         <div>
           <Button size="sm" use="remove" onClick={() => removeChain()}>-</Button>
         </div>
@@ -36,7 +36,7 @@ function SelectedChainDisplay({ chain, loadedChainList, changeWeight, removeChai
           </IconContext.Provider>
         </div>
       </div>
-      <div>
+      <div className="">
         <h3 className="text-center font-bold mt-2 break-words">{chain.name}</h3>
         {chain.source === 'user' && <h3 className="text-center font-light text-xs mt-.05">(User-Generated)</h3>}
       </div>

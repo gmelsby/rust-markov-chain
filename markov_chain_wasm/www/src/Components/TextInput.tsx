@@ -56,7 +56,7 @@ function TextInput({ value, setValue }:
 
 
   return (
-    <div className="flex flex-row m-2">
+    <div className="flex flex-row px-4 break-all">
       {
         editing ?
           <>
@@ -65,7 +65,7 @@ function TextInput({ value, setValue }:
           </>
           :
           <>
-            <h3 className="break-words w-full font-semibold">{value}</h3>
+            <h3 className="font-semibold">{value}</h3>
             <div className="cursor-pointer ml-2" onClick={() => setEditing(true)}><MdEdit /></div>
           </>
       }

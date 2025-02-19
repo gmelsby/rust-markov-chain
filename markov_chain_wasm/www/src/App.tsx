@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { WasmMarkovChain } from 'markov_chain_wasm';
 import OutputControlPanel from './Components/OutputControlPanel';
-import ChainSelector from './Components/ChainSelector';
 import TopBar from './Components/TopBar';
+import ChainControlPanel from './Components/ChainControlPanel';
 
 const CHOICES = 15;
 const CHAIN_VERSION = 'v2';
@@ -86,7 +86,7 @@ function App() {
     <div className="">
       <TopBar />
       <div className="bg-neutral-700 z-10 sticky">
-        <ChainSelector {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
+        <ChainControlPanel {...{ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, setOutput }} resetChain={resetOutput} chainVersion={CHAIN_VERSION} />
       </div>
       <div className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? 'min-h-50' : ''} ${output.length === 0 ? 'opacity-0' : ''}`} ref={outputDivRef}>
         <div className={'mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/40'}>

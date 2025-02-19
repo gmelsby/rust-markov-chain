@@ -5,7 +5,7 @@ import Button from './Button';
 import AddChain from './AddChain';
 import ProgressBar from './ProgressBar';
 
-function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion, resetChain }:
+function ChainControlPanel({ setMarkovChain, ngramLength, setNgramLength, loaded, setLoaded, chainVersion, resetChain }:
   {
     setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>,
     ngramLength: number,
@@ -72,40 +72,42 @@ function ChainSelector({ setMarkovChain, ngramLength, setNgramLength, loaded, se
   }
 
   return (
-    <div>
-      <div className="flex space-x-1.5 flex-wrap">
-        {selectedChains.map((c, i) =>
-          <SelectedChainDisplay
-            chain={c}
-            key={`${c.name}${c.source}`}
-            changeWeight={changeChainWeight(c.name, c.source)}
-            removeChain={() => removeChain(c.name, c.source)}
-            loadedChainList={loadedChainList}
-            loading={loading && i === loadedChainList.length}
-          />
-        )}
+    <>
+      <div className="flex flex-wrap">
+        <div className="flex space-x-1.5 flex-wrap border-2 border-neutral-500 rounded-2xl">
+          {selectedChains.map((c, i) =>
+            <SelectedChainDisplay
+              chain={c}
+              key={`${c.name}${c.source}`}
+              changeWeight={changeChainWeight(c.name, c.source)}
+              removeChain={() => removeChain(c.name, c.source)}
+              loadedChainList={loadedChainList}
+              loading={loading && i === loadedChainList.length}
+            />
+          )}
 
-        <AddChain {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }} />
-      </div>
-      <div>
-        <div className="flex">
-          <h3>Ngram Length: </h3>
-          <select
-            className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
-            value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
+          <AddChain {...{ chainVersion, selectedChains, setSelectedChains, setLoaded }} />
         </div>
+        <div className="flex flex-col justify-around border-2 rounded-2xl border-neutral-500">
+          <div>
+            <h3>Ngram Length: </h3>
+            <select
+              className='h-12 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer'
+              value={ngramLength} onChange={e => setNgramLength(Number(e.target.value))}>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
 
-        {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
-          {loaded ? 'Reset Output' : 'Click to Load'}
-        </Button>}
-        <ProgressBar stepCount={selectedChains.length} currentStep={loadedChainList.length} active={loading} />
-      </div>
-    </div>
+          {selectedChains.length > 0 && <Button onClick={loaded ? resetChain : handleLoadChains}>
+            {loaded ? 'Reset Output' : 'Click to Load'}
+          </Button>}
+        </div>
+      </div >
+      <ProgressBar stepCount={selectedChains.length} currentStep={loadedChainList.length} active={loading} />
+    </>
   )
 
 }
 
-export default ChainSelector;
+export default ChainControlPanel;

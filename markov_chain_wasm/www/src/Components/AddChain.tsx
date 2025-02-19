@@ -67,7 +67,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
 
 
   return (
-    <div className="border-2 border-neutral-600 bg-neutral-800/50 border-solid rounded-2xl min-h-40 min-w-30 m-1.5 xl:m-2 flex flex-col"
+    <div className="border-2 border-neutral-600 bg-neutral-800/50 border-solid rounded-2xl min-h-40 max-w-xs min-w-30 m-1.5 xl:m-2 flex flex-col"
       ref={containerRef}
     >
       {uiState === 'create'
@@ -78,10 +78,15 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
           ?
           <div className="flex flex-col items-center justify-evenly p-2 flex-grow">
             <h3 className='m-2 font-bold'>Add Chain</h3>
+            <div className="m-2"><Button size="sm" onClick={() => setUiState('create')}>
+              <span className="flex items-center">
+                <MdUploadFile className="mr-2" />Create new chain from .txt file
+              </span></Button>
+            </div>
             {serverChainList.length + localChainList.length !== selectedChains.length &&
               <div>
                 <select
-                  className='h-12 max-w-52 items-center justify-center rounded-md bg-neutral-950 px-6 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 mb-2'
+                  className='h-12 max-w-54 items-center justify-center rounded-md bg-neutral-950 px-2 font-medium text-neutral-50 hover:bg-blue-950 cursor-pointer mr-2 my-2'
                   value={chainOption}
                   onChange={e => {
                     setChainOption(e.target.value);
@@ -109,11 +114,7 @@ function AddChain({ chainVersion, selectedChains, setSelectedChains, setLoaded }
                 </Button>
               </div>
             }
-            <div className="m-2"><Button size="sm" onClick={() => setUiState('create')}>
-              <span className="flex items-center">
-                <MdUploadFile className="mr-2" />Create new chain from .txt file
-              </span></Button>
-            </div>
+
           </div>
           :
           <div onClick={() => {
