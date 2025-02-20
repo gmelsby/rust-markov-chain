@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-function useScroll() {
+function useScroll(): {
+  scrollDirection: "down" | "up";
+  lastKnownScrollY: number;
+  scrollLength: number;
+} {
   const [lastKnownScrollY, setLastKnownScrollY] = useState(0);
   const [scrollLength, setScrollLength] = useState(0);
   // Set up event listener to determine if user has scrolled up or down
@@ -25,7 +29,7 @@ function useScroll() {
   }, [lastKnownScrollY]);
 
   return {
-    scrollDirection: scrollLength >= 0 ? "down" : "up",
+    scrollDirection: scrollLength > 0 ? "down" : "up",
     lastKnownScrollY,
     scrollLength,
   };

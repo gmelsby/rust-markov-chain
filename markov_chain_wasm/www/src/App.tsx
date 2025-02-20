@@ -52,7 +52,7 @@ function App() {
   useEffect(() => {
     if (outputDivRef.current) {
       // Handle scrolling up
-      if (scrollDirection === "up" && scrollLength < -2) {
+      if (scrollDirection === "up" && scrollLength < 0) {
         setAutoScroll(false);
       } else if (
         // Check if scrolled to bottom (or close enough)
@@ -66,7 +66,7 @@ function App() {
 
   return (
     <div className="">
-      <TopBar />
+      <TopBar {...{ scrollDirection, lastKnownScrollY }} />
       <div className="z-20 sticky">
         <ChainControlPanel
           {...{
