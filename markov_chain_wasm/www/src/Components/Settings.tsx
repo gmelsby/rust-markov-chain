@@ -4,6 +4,7 @@ import { MdSettings } from 'react-icons/md';
 import Modal from './Modal';
 import useChains from '../Hooks/useChains';
 import ChainContext from '../Context/ChainContext';
+import DeleteChains from './DeleteChains';
 
 function Settings() {
   const [open, setOpen] = useState(false);
@@ -19,9 +20,7 @@ function Settings() {
       </IconContext.Provider>
       <Modal open={open} title='Settings' closeOnClickOut onClose={() => setOpen(false)}>
         <div className='flex flex-col justify-around items-center grow overflow-auto'>
-          <div>
-            <h3 className='font-semibold'>Delete chains from local storage</h3>
-          </div>
+          <DeleteChains />
         </div>
       </Modal >
     </>
