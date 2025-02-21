@@ -1,5 +1,5 @@
-import { openDB } from 'idb';
 import { useEffect, useState } from 'react';
+import { readIdbChains } from '../Models/IndexedDb';
 
 function useChains(
   source: 'user' | 'server',
@@ -18,21 +18,8 @@ function useChains(
 
     // For getting chains from IndexedDB
     const fetchChainsFromIdb = async () => {
-      const db = await openDB(`chains/${chainVersion}`, 1, {
-        upgrade(db) {
-          // Handle creating object stores if they don't exist
-          if (!db.objectStoreNames.contains('2')) {
-            db.createObjectStore('2');
-          }
-          if (!db.objectStoreNames.contains('3')) {
-            db.createObjectStore('3');
-          }
-        }
-      });
-      const transaction = db.transaction('3', 'readonly');
-      const store = transaction.objectStore('3');
-      const chains = await store.getAllKeys();
-      setChains(chains.map(c => c.toString()));
+      const chains = await readIdbChains(chainVersion);
+      setChains(chains);
     }
 
     if (source === 'server') {

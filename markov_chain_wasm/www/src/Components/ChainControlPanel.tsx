@@ -42,7 +42,7 @@ function ChainControlPanel({
     }
   }, [loaded]);
 
-  const { chainVersion } = useContext(ChainContext);
+  const { chainVersion, lastUpdated } = useContext(ChainContext);
 
   const handleLoadChains = async () => {
     setLoading(true);

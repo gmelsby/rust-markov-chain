@@ -30,6 +30,11 @@ function AddChain({
   // For handling onClick event
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // When list of local chains is updated, removes any non-existent chains from selectedChains
+  useEffect(() => {
+    setSelectedChains(chains => chains.filter(c => c.source === 'server' || localChainList.includes(c.name)))
+  }, [localChainList, localChainList.length, setSelectedChains]);
+
   // Sets the chainOption to the first possible choice
   useEffect(() => {
     if (localChainList.length || serverChainList.length) {
