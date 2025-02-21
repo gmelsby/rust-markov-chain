@@ -11,6 +11,7 @@ function Button({
   active,
   selected,
   buttonRef,
+  transparent,
 }: {
   onClick: () => void;
   onLongPress?: () => void;
@@ -26,6 +27,7 @@ function Button({
   active?: boolean;
   selected?: boolean;
   buttonRef?: React.RefObject<HTMLButtonElement>;
+  transparent?: boolean;
 }) {
   const longPressTimeout = useRef<number | null>(null);
   const longPressRepeatTimeout = useRef<number | null>(null);
@@ -113,7 +115,7 @@ function Button({
       outline-blue-600
       ${active ? "not-motion-safe:bg-blue-950 text-neutral-500" : "text-neutral-50"}
       ${selected ? "outline-2 " : ""}
-      bg-neutral-950
+      ${transparent ? 'bg-neutral-950/50' : 'bg-neutral-950'}
 } `}
       onMouseDown={disabled || !onLongPress ? undefined : handleMouseDown}
       onMouseUp={disabled || !onLongPress ? undefined : handleMouseUp}

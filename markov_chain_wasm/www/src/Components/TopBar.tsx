@@ -1,4 +1,4 @@
-import SettingsModal from './SettingsModal';
+import Settings from './Settings';
 
 function TopBar({
   scrollDirection,
@@ -26,7 +26,7 @@ function TopBar({
           <h1 className="text-lg font-bold">Markov Chain</h1>
         </div>
         <div className="mx-3 lg:mx-4">
-          <SettingsModal />
+          <Settings />
         </div>
       </div>
     </div>
