@@ -1,3 +1,5 @@
+import SettingsModal from './SettingsModal';
+
 function TopBar({
   scrollDirection,
   lastKnownScrollY,
@@ -17,11 +19,14 @@ function TopBar({
           className={`mx-3 lg:mx-4 ${isAtTop ? "" : "cursor-pointer"}`}
           onClick={
             isAtTop
-              ? () => {}
+              ? () => { }
               : () => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
           }
         >
           <h1 className="text-lg font-bold">Markov Chain</h1>
+        </div>
+        <div className="mx-3 lg:mx-4">
+          <SettingsModal />
         </div>
       </div>
     </div>

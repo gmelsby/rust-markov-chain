@@ -110,8 +110,9 @@ function Button({
         ${size === "sm" ? "h-8 px-4 " : "h-12 px-6 "}
         ${onLongPress && isPress ? "transition scale-95" : ""}
         items-center justify-center rounded-md font-medium
+      outline-blue-600
       ${active ? "not-motion-safe:bg-blue-950 text-neutral-500" : "text-neutral-50"}
-      ${selected ? "outline-2 outline-blue-600" : ""}
+      ${selected ? "outline-2 " : ""}
       bg-neutral-950
 } `}
       onMouseDown={disabled || !onLongPress ? undefined : handleMouseDown}
