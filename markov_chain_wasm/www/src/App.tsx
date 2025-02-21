@@ -4,6 +4,7 @@ import OutputControlPanel from "./Components/OutputControlPanel";
 import TopBar from "./Components/TopBar";
 import ChainControlPanel from "./Components/ChainControlPanel";
 import useScroll from "./Hooks/useScroll";
+import { ChainContextProvider } from './Context/ChainContextProvider';
 
 const CHOICES = 15;
 const CHAIN_VERSION = "v2";
@@ -65,7 +66,7 @@ function App() {
   }, [lastKnownScrollY, scrollDirection, scrollLength]);
 
   return (
-    <div className="">
+    <ChainContextProvider chainVersion={CHAIN_VERSION}>
       <TopBar {...{ scrollDirection, lastKnownScrollY }} />
       <div className="z-20 sticky">
         <ChainControlPanel
@@ -78,7 +79,6 @@ function App() {
             setOutput,
           }}
           resetChain={resetOutput}
-          chainVersion={CHAIN_VERSION}
         />
       </div>
       <div
@@ -110,7 +110,7 @@ function App() {
           />
         )}
       </div>
-    </div>
+    </ChainContextProvider>
   );
 }
 export default App;

@@ -1,10 +1,11 @@
 import Button from "./Button";
 import { MdUploadFile, MdWarning } from "react-icons/md";
 import { IconContext } from "react-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { WasmMarkovChain, JsLoadMode } from "markov_chain_wasm";
 import TextInput from "./TextInput";
 import ProgressBar from "./ProgressBar";
+import ChainContext from '../Context/ChainContext';
 
 function FileDragAndDrop({
   back,
@@ -71,6 +72,8 @@ function FileDragAndDrop({
     setFile(f);
   };
 
+  const { setLastUpdated } = useContext(ChainContext);
+
   // Handles creation of chain
   const createChain = useCallback(async () => {
     if (!file || chainName === "") {
@@ -112,11 +115,12 @@ function FileDragAndDrop({
       setCreationStep(4);
 
       pushUserChain(chainName);
+      setLastUpdated(Date.now());
       exit();
     };
 
     reader.readAsArrayBuffer(file);
-  }, [chainName, chainVersion, exit, file, loadMode, pushUserChain]);
+  }, [chainName, chainVersion, exit, file, loadMode, pushUserChain, setLastUpdated]);
 
   return (
     <>
@@ -159,8 +163,8 @@ function FileDragAndDrop({
                 onChange={(e) =>
                   setLoadMode(
                     e.target.value as
-                      | "PreserveAllNewlines"
-                      | "PreserveDoubleNewlines",
+                    | "PreserveAllNewlines"
+                    | "PreserveDoubleNewlines",
                   )
                 }
               >

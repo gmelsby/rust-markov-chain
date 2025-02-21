@@ -18,7 +18,7 @@ function Modal({ open, onClose, closeOnClickOut, title, children }:
     <div onClick={closeOnClickOut ? onClose : () => { }} className="flex justify-center items-center top-0 fixed z-40 h-[100vh] w-[100vw] bg-neutral-950/80">
       <div className='min-w-[95vw] sm:min-w-sm'>
         <div onClick={(e) => { e.stopPropagation() }} className="bg-neutral-800 rounded-2xl border-neutral-600/50 border-2 
-        m-5 min-h-[50vh] max-h-[95vh]
+        m-5 min-h-[65svh] sm:min-h-[50svh] max-h-[95svh]
         flex flex-col">
           <div className='flex flex-row justify-between items-center border-b-2 border-neutral-400/50 mx-2 py-3'>
             <h2 className='text-xl ml-2 font-semibold'>{title ? title : ''}</h2>

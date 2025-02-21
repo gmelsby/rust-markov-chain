@@ -1,17 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import Button from "./Button";
 import { MdAddCircle, MdUploadFile } from "react-icons/md";
 import FileDragAndDrop from "./FileDragAndDrop";
 import { IconContext } from "react-icons";
 import useChains from "../Hooks/useChains";
+import ChainContext from '../Context/ChainContext';
 
 function AddChain({
-  chainVersion,
   selectedChains,
   setSelectedChains,
   setLoaded,
 }: {
-  chainVersion: string;
   selectedChains: { name: string; weight: number; source: "user" | "server" }[];
   setSelectedChains: React.Dispatch<
     React.SetStateAction<
@@ -22,8 +21,11 @@ function AddChain({
 }) {
   const [chainOption, setChainOption] = useState<string>("");
   const [uiState, setUiState] = useState<"icon" | "select" | "create">("icon");
+
+  const { lastUpdated, chainVersion } = useContext(ChainContext);
+
   const serverChainList = useChains("server", chainVersion);
-  const localChainList = useChains("user", chainVersion, uiState !== "create");
+  const localChainList = useChains("user", chainVersion, lastUpdated);
 
   // For handling onClick event
   const containerRef = useRef<HTMLDivElement>(null);

@@ -1,11 +1,12 @@
 import { WasmMarkovChain } from "markov_chain_wasm";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import SelectedChainDisplay from "./SelectedChainDisplay";
 import Button from "./Button";
 import AddChain from "./AddChain";
 import ProgressBar from "./ProgressBar";
 import { MdOutlineArrowForward } from "react-icons/md";
 import { IconContext } from "react-icons";
+import ChainContext from '../Context/ChainContext';
 
 function ChainControlPanel({
   setMarkovChain,
@@ -13,7 +14,6 @@ function ChainControlPanel({
   setNgramLength,
   loaded,
   setLoaded,
-  chainVersion,
   resetChain,
 }: {
   setMarkovChain: React.Dispatch<React.SetStateAction<WasmMarkovChain | null>>;
@@ -21,7 +21,6 @@ function ChainControlPanel({
   setNgramLength: React.Dispatch<React.SetStateAction<number>>;
   loaded: boolean;
   setLoaded: React.Dispatch<React.SetStateAction<boolean>>;
-  chainVersion: string;
   resetChain: () => void;
 }) {
   const [selectedChains, setSelectedChains] = useState<
@@ -42,6 +41,8 @@ function ChainControlPanel({
       setLoadedChainList([]);
     }
   }, [loaded]);
+
+  const { chainVersion } = useContext(ChainContext);
 
   const handleLoadChains = async () => {
     setLoading(true);
@@ -126,7 +127,6 @@ function ChainControlPanel({
 
             <AddChain
               {...{
-                chainVersion,
                 selectedChains,
                 setSelectedChains,
                 setLoaded,

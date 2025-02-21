@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 function useChains(
   source: 'user' | 'server',
   chainVersion: string,
-  update?: boolean // Causes the request to only fire when value switches from false/undefined to true
+  lastUpdate?: number, // Causes the request to fire again when lastUpdate moves forward
 ) {
   const [chains, setChains] = useState<string[]>([]);
 
@@ -39,12 +39,11 @@ function useChains(
       fetchChainsFromServer();
     };
 
-    // Only trigger if update's value switches from false to true
-    if (source === 'user' && update) {
+    if (source === 'user') {
       fetchChainsFromIdb();
     }
 
-  }, [source, chainVersion, update])
+  }, [source, chainVersion, lastUpdate])
   return chains;
 }
 
