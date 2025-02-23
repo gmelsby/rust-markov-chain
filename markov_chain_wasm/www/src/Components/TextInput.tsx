@@ -10,14 +10,7 @@ function TextInput({
 }) {
   const [editing, setEditing] = useState(false);
   const editBox = useRef<HTMLInputElement>(null);
-  const [initialValue, setInitialValue] = useState<string | null>(null);
-
-  // Stores the initial value of value for resetting to
-  useEffect(() => {
-    if (!initialValue) {
-      setInitialValue(value);
-    }
-  }, [value, initialValue]);
+  const [initialValue] = useState(value);
 
   const endEditing = useCallback(() => {
     const input = editBox.current;

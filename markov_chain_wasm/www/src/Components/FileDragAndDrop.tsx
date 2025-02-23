@@ -1,7 +1,7 @@
 import Button from "./Button";
 import { MdUploadFile, MdWarning } from "react-icons/md";
 import { IconContext } from "react-icons";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { WasmMarkovChain, JsLoadMode } from "markov_chain_wasm";
 import TextInput from "./TextInput";
 import ProgressBar from "./ProgressBar";
@@ -61,15 +61,10 @@ function FileDragAndDrop({
     }
   };
 
-  // Updates chain name when file changes
-  useEffect(() => {
-    if (file !== null) setChainName(file.name.replace(/\.txt$/, ""));
-    else setChainName("");
-  }, [file]);
-
   // Handle file submission
   const onFileSelect = (f: File) => {
     setFile(f);
+    setChainName(f.name.replace(/\.txt$/, ""));
   };
 
   const { setLastUpdated } = useContext(ChainContext);
