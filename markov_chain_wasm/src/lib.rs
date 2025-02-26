@@ -133,7 +133,7 @@ impl WasmMarkovChain {
 
     #[wasm_bindgen]
     pub fn peek_next_tokens(&self, count: usize) -> Result<Vec<Token>, JsValue> {
-        let tokens = self.chain.peek_next_tokens(count);
+        let tokens = self.chain.peek_next_tokens(count, 1.0);
         let result = tokens
             .iter()
             .map(|(tk_str, tk_int)| Token {

@@ -354,7 +354,7 @@ impl MarkovChain {
     }
 
     // Returns a Vec of possible next tokens in the Markov chain
-    pub fn peek_next_tokens(&self, count: usize) -> Vec<(String, usize)> {
+    pub fn peek_next_tokens(&self, count: usize, exp: f32) -> Vec<(String, usize)> {
         let next_token_distribution = self.ngram_distribution.get(&self.current_ngram);
 
         let mut next_tokens = Vec::with_capacity(self.ngram_length);
@@ -367,7 +367,16 @@ impl MarkovChain {
         // Check that next_token_list is not None
         match next_token_distribution {
             Some(token_distribution) => {
-                let next_token_entries = token_distribution
+                // Modifies the weight by exponent, takes shortcut if exp is 1
+                let weighted_token_distribution = if exp == 1.0 {
+                    token_distribution.clone()
+                } else {
+                    token_distribution
+                        .into_iter()
+                        .map(|(ngram, weight)| (*ngram, weight.powf(exp)))
+                        .collect()
+                };
+                let next_token_entries = weighted_token_distribution
                     .choose_multiple_weighted(&mut rng, count, |entry| entry.1)
                     .unwrap()
                     .collect::<Vec<_>>();
@@ -470,7 +479,7 @@ impl MarkovChain {
         let startend_token = self.get_startend_token();
         for _ in 0..1000 {
             // Look at next possible tokens
-            let candidates = self.peek_next_tokens(15);
+            let candidates = self.peek_next_tokens(15, 1.0);
 
             let non_newline_candidates: Vec<(String, usize)> = candidates
                 .iter()
@@ -513,7 +522,7 @@ impl MarkovChain {
             .into_iter()
             .map(|tk| (self.token_dict.convert_int_to_string(tk).unwrap(), tk))
             .collect();
-        let candidate = &self.peek_next_tokens(1)[0];
+        let candidate = &self.peek_next_tokens(1, 1.0)[0];
         default_result.push(candidate.clone());
         default_result
     }
