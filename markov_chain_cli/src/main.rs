@@ -136,6 +136,6 @@ fn main() {
             },
             _ => println!("Error: Command does not exist"),
         },
-        None => println!("Error: No command found"),
+        _ => println!("Error: No command found"),
     }
 }

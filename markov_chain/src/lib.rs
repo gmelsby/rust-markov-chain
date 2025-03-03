@@ -595,7 +595,7 @@ impl TokenDict {
     pub fn convert_int_to_string(&self, idx: usize) -> Result<String, std::io::Error> {
         match self.int_to_string.get(idx) {
             Some(str) => Ok(str.to_string()),
-            None => Err(io::Error::new(
+            _ => Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "No corresponding string exists",
             )),
@@ -606,7 +606,7 @@ impl TokenDict {
     pub fn convert_string_to_int(&self, tk: &String) -> Result<usize, std::io::Error> {
         match self.string_to_int.get(tk) {
             Some(int) => Ok(*int),
-            None => Err(io::Error::new(
+            _ => Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "No corresponding int exists",
             )),
