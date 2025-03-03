@@ -190,8 +190,7 @@ impl MarkovChain {
             }
         }
 
-        // Pad end of text with newline and STARTEND so at worst case it will wrap around to the start of text
-        Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
+        // Pad end of text with STARTEND so at worst case it will wrap around to the start of text
         for _ in 0..self.ngram_length {
             Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, startend_token);
         }
@@ -309,7 +308,7 @@ impl MarkovChain {
                     .find(|(tk, _)| *tk == translated_tk)
                 {
                     Some((_, p)) => *p += scale * new_probability,
-                    None => main_distribution_entry.push((translated_tk, scale * new_probability)),
+                    _ => main_distribution_entry.push((translated_tk, scale * new_probability)),
                 }
             }
         }
@@ -395,7 +394,7 @@ impl MarkovChain {
                         .collect();
                 }
             }
-            None => {}
+            _ => {}
         }
         // TODO: gracefully handle no next token
         next_tokens
@@ -538,7 +537,7 @@ impl MarkovChain {
                 self.current_ngram = ngram.to_vec();
                 Ok(())
             }
-            None => Err(io::Error::new(
+            _ => Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "No ngrams in the dictionary",
             )),
@@ -552,7 +551,7 @@ impl MarkovChain {
                 self.current_ngram = ngram;
                 Ok(())
             }
-            None => Err(io::Error::new(
+            _ => Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "Ngram not found in the dictionary",
             )),
@@ -579,7 +578,7 @@ impl TokenDict {
         match self.string_to_int.get(tk) {
             // Return index
             Some(key) => return *key,
-            None => {
+            _ => {
                 // Add String to Vec
                 self.int_to_string.push(tk.to_string());
                 // Get index int
