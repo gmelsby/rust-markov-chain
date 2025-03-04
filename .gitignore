@@ -1,9 +1,10 @@
+!markov_chain_wasm/nginx/chains/
 */target
 texts
 *.bin
-*/chains
+*/chains/*
 */pkg
 */node_modules
-chains
+chains/*
 .env
 dist
