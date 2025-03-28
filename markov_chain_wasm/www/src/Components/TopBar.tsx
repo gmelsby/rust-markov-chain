@@ -1,3 +1,4 @@
+import Info from './Info';
 import Settings from './Settings';
 
 function TopBar({
@@ -25,11 +26,12 @@ function TopBar({
         >
           <h1 className="text-lg font-bold">Markov Chain</h1>
         </div>
-        <div className="mx-3 lg:mx-4">
+        <div className="flex mx-3 lg:mx-4 gap-3">
+          <Info />
           <Settings />
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
