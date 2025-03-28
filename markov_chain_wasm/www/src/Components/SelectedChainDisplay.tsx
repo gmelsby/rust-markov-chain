@@ -8,6 +8,7 @@ function SelectedChainDisplay({
   changeWeight,
   removeChain,
   loading,
+  displayWeight,
 }: {
   chain: {
     name: string;
@@ -18,6 +19,7 @@ function SelectedChainDisplay({
   loadedChainList: string[];
   removeChain: () => void;
   loading: boolean;
+  displayWeight?: boolean
 }) {
   return (
     <div className="rounded-2xl sm:m-4 my-1.5 mx-1 sm:mx-2 p-2 border-2 min-w-0 shrink grow lg:grow-0 lg:max-w-xs border-neutral-800/80 bg-neutral-800/60 flex flex-col justify-between">
@@ -45,20 +47,24 @@ function SelectedChainDisplay({
           </h3>
         )}
       </div>
-      <div>
-        <input
-          className="accent-blue-700 hover:cursor-pointer mx-auto block my-2"
-          type="range"
-          min="0.1"
-          max="5"
-          step="0.1"
-          value={chain.weight}
-          onChange={(e) => changeWeight(Number(e.target.value))}
-        />
-        <h3 className="text-center my-2">
-          Weight: <span className="font-bold">{chain.weight.toFixed(1)}</span>
-        </h3>
-      </div>
+      {displayWeight ?
+        <div>
+          <input
+            className="accent-blue-700 hover:cursor-pointer mx-auto block my-2"
+            type="range"
+            min="0.1"
+            max="5"
+            step="0.1"
+            value={chain.weight}
+            onChange={(e) => changeWeight(Number(e.target.value))}
+          />
+          <h3 className="text-center my-2">
+            Weight: <span className="font-bold">{chain.weight.toFixed(1)}</span>
+          </h3>
+        </div>
+        :
+        <div className='h-10'></div>
+      }
     </div>
   );
 }

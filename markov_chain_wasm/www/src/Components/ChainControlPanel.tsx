@@ -122,6 +122,7 @@ function ChainControlPanel({
                 removeChain={() => removeChain(c.name, c.source)}
                 loadedChainList={loadedChainList}
                 loading={loading && i === loadedChainList.length}
+                displayWeight={selectedChains.length > 1}
               />
             ))}
 
