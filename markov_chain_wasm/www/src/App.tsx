@@ -7,7 +7,7 @@ import useScroll from "./Hooks/useScroll";
 import { ChainContextProvider } from './Context/ChainContextProvider';
 
 const CHOICES = 15;
-const CHAIN_VERSION = "v2";
+const CHAIN_VERSION = "v3";
 
 function App() {
   const [markovChain, setMarkovChain] = useState<WasmMarkovChain | null>(null);
