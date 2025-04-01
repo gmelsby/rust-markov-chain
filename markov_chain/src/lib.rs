@@ -356,11 +356,7 @@ impl MarkovChain {
     pub fn peek_next_tokens(&self, count: usize, exp: f32) -> Vec<(String, usize)> {
         let next_token_distribution = self.ngram_distribution.get(&self.current_ngram);
 
-        let mut next_tokens = Vec::with_capacity(self.ngram_length);
-        next_tokens.resize(
-            self.ngram_length,
-            ("\n".to_string(), self.get_newline_token()),
-        );
+        let mut next_tokens = Vec::new();
 
         let mut rng = thread_rng();
         // Check that next_token_list is not None
@@ -396,7 +392,6 @@ impl MarkovChain {
             }
             _ => {}
         }
-        // TODO: gracefully handle no next token
         next_tokens
     }
 
