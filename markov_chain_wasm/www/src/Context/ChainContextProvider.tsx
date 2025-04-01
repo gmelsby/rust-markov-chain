@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ChainContext from './ChainContext';
 
-export const ChainContextProvider = ({ chainVersion, children }: { chainVersion: string, children: React.ReactNode }) => {
+const ChainContextProvider = ({ chainVersion, children }: { chainVersion: string, children: React.ReactNode }) => {
   const [lastUpdated, setLastUpdated] = useState(0);
 
   return (
@@ -10,3 +10,5 @@ export const ChainContextProvider = ({ chainVersion, children }: { chainVersion:
     </ChainContext.Provider>
   )
 };
+
+export default ChainContextProvider;

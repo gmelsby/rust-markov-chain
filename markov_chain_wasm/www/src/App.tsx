@@ -4,7 +4,7 @@ import OutputControlPanel from "./Components/OutputControlPanel";
 import TopBar from "./Components/TopBar";
 import ChainControlPanel from "./Components/ChainControlPanel";
 import useScroll from "./Hooks/useScroll";
-import { ChainContextProvider } from './Context/ChainContextProvider';
+import ChainContextProvider from './Context/ChainContextProvider';
 
 const CHOICES = 15;
 const CHAIN_VERSION = "v3";
