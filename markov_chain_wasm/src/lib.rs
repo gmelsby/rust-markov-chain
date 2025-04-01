@@ -99,7 +99,7 @@ impl WasmMarkovChain {
 
         // Open db
         let factory = Factory::new().map_err(|e| JsValue::from_str(&e.to_string()))?;
-        let open_request = factory.open(db_name, Some(1)).unwrap();
+        let open_request = factory.open(db_name, Some(2)).unwrap();
 
         let db = open_request
             .await
@@ -181,7 +181,7 @@ impl WasmMarkovChain {
     ) -> Result<(), JsValue> {
         // Open db
         let factory = Factory::new().map_err(|e| JsValue::from_str(&e.to_string()))?;
-        let open_request = factory.open(db_name, Some(1)).unwrap();
+        let open_request = factory.open(db_name, Some(2)).unwrap();
 
         let db = open_request
             .await

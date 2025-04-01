@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const IDB_VERSION_NO = 1;
+const IDB_VERSION_NO = 2;
 const STORE_NAMES = ["2", "3"] as const;
 
 async function openAndUpgrade(chainVersion: string) {
