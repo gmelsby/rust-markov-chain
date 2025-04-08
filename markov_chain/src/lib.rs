@@ -190,6 +190,13 @@ impl MarkovChain {
             }
         }
 
+        // Add newline padding if we don't already have a newline
+        if let Some(tk) = prior_tokens.last() {
+            if *tk != newline_token {
+                Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, newline_token);
+            }
+        }
+
         // Pad end of text with STARTEND so at worst case it will wrap around to the start of text
         for _ in 0..self.ngram_length {
             Self::insert_and_push_token(&mut ngram_dict, &mut prior_tokens, startend_token);
