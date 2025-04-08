@@ -5,6 +5,8 @@ import TopBar from "./Components/TopBar";
 import ChainControlPanel from "./Components/ChainControlPanel";
 import useScroll from "./Hooks/useScroll";
 import ChainContextProvider from './Context/ChainContextProvider';
+import HiddenTokenContextProvider from './Context/HiddenTokenContextProvider';
+import FilteredOutput from './Components/FilteredOutput';
 
 const CHOICES = 15;
 const CHAIN_VERSION = "v3";
@@ -67,49 +69,51 @@ function App() {
 
   return (
     <ChainContextProvider chainVersion={CHAIN_VERSION}>
-      <TopBar {...{ scrollDirection, lastKnownScrollY }} />
-      <div className="z-20 sticky">
-        <ChainControlPanel
-          {...{
-            setMarkovChain,
-            ngramLength,
-            setNgramLength,
-            loaded,
-            setLoaded,
-            setOutput,
-          }}
-          resetChain={resetOutput}
-        />
-      </div>
-      <div
-        className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? "min-h-50" : ""} ${output.length === 0 ? "opacity-0" : ""}`}
-        ref={outputDivRef}
-      >
-        <div
-          className={
-            "mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/80"
-          }
-        >
-          <p>{output.map((tk) => tk.str).join("")}</p>
-        </div>
-      </div>
-      <div className="h-10 mb-5" ref={paddingDivRef}></div>
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto z-0">
-        {loaded && (
-          <OutputControlPanel
+      <HiddenTokenContextProvider>
+        <TopBar {...{ scrollDirection, lastKnownScrollY }} />
+        <div className="z-20 sticky">
+          <ChainControlPanel
             {...{
-              markovChain,
+              setMarkovChain,
               ngramLength,
-              output,
-              setOutput,
+              setNgramLength,
               loaded,
-              autoScroll,
-              setAutoScroll,
+              setLoaded,
+              setOutput,
             }}
-            choices={CHOICES}
+            resetChain={resetOutput}
           />
-        )}
-      </div>
+        </div>
+        <div
+          className={`max-w-7xl m-auto mt-5 pb-25 ${loaded ? "min-h-50" : ""} ${output.length === 0 ? "opacity-0" : ""}`}
+          ref={outputDivRef}
+        >
+          <div
+            className={
+              "mx-3 text-start whitespace-pre-wrap p-5 rounded-lg bg-neutral-700/80"
+            }
+          >
+            <FilteredOutput {...{ output }} />
+          </div>
+        </div>
+        <div className="h-10 mb-5" ref={paddingDivRef}></div>
+        <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl m-auto z-0">
+          {loaded && (
+            <OutputControlPanel
+              {...{
+                markovChain,
+                ngramLength,
+                output,
+                setOutput,
+                loaded,
+                autoScroll,
+                setAutoScroll,
+              }}
+              choices={CHOICES}
+            />
+          )}
+        </div>
+      </HiddenTokenContextProvider>
     </ChainContextProvider>
   );
 }

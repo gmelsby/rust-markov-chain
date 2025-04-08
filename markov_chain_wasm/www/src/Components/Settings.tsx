@@ -5,6 +5,7 @@ import Modal from './Modal';
 import useChains from '../Hooks/useChains';
 import ChainContext from '../Context/ChainContext';
 import DeleteChains from './DeleteChains';
+import ToggleTokens from './ToggleTokens';
 
 function Settings() {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,7 @@ function Settings() {
       <Modal open={open} title='Settings' closeOnClickOut onClose={() => setOpen(false)}>
         <div className='flex flex-col justify-around items-center grow overflow-auto'>
           <DeleteChains />
+          <ToggleTokens />
         </div>
       </Modal >
     </>

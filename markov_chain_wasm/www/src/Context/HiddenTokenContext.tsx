@@ -11,6 +11,8 @@ const HiddenTokenContext = createContext<{
   setHideDoubleQuotes: React.Dispatch<React.SetStateAction<boolean>>,
   hideUnderscores: boolean,
   setHideUnderscores: React.Dispatch<React.SetStateAction<boolean>>
+  hideStartEnd: boolean,
+  setHideStartEnd: React.Dispatch<React.SetStateAction<boolean>>
 }>({
   hideParentheses: false,
   setHideParentheses: () => { },
@@ -22,6 +24,8 @@ const HiddenTokenContext = createContext<{
   setHideDoubleQuotes: () => { },
   hideUnderscores: false,
   setHideUnderscores: () => { },
+  hideStartEnd: false,
+  setHideStartEnd: () => { },
 });
 
 export default HiddenTokenContext;

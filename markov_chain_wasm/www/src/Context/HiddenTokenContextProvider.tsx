@@ -7,6 +7,7 @@ const HiddenTokenContextProvider = ({ children }: { children: React.ReactNode })
   const [hideSingleQuotes, setHideSingleQuotes] = useState(false);
   const [hideDoubleQuotes, setHideDoubleQuotes] = useState(false);
   const [hideUnderscores, setHideUnderscores] = useState(false);
+  const [hideStartEnd, setHideStartEnd] = useState(false);
 
   return (
     <HiddenTokenContext.Provider value={{
@@ -20,7 +21,9 @@ const HiddenTokenContextProvider = ({ children }: { children: React.ReactNode })
         hideDoubleQuotes,
         setHideDoubleQuotes,
         hideUnderscores,
-        setHideUnderscores
+        setHideUnderscores,
+        hideStartEnd,
+        setHideStartEnd,
       }
     }}>
       {children}
