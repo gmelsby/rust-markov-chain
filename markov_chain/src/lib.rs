@@ -18,7 +18,7 @@ const NO_SPACE_AFTER_TOKENS: &str = "$<([{\n";
 const QUOTES: &str = "\"“”'’‘`_-";
 
 // Special token for padding start and end of chains
-const STARTENDTOKEN: &str = "\\*start/end*";
+const STARTENDTOKEN: &str = "*start/end*";
 
 // For serializing and deserializing neccesary information for generating a Markov Chain
 #[derive(Serialize, Deserialize)]

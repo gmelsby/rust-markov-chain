@@ -20,7 +20,7 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
       const doubleQuotes = hideDoubleQuotes ? ['"', '“', '”'] : [];
       const singleQuotes = hideSingleQuotes ? ['\'', '’', '`', '‘'] : [];
       const underscores = hideUnderscores ? ['_'] : [];
-      const startEnd = hideStartEnd ? ['\\*start/end*'] : [];
+      const startEnd = hideStartEnd ? ['*start/end*'] : [];
       return [
         ...parentheses,
         ...squareBrackets,
