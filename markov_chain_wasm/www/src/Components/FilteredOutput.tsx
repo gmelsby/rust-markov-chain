@@ -1,9 +1,9 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import HiddenTokenContext from '../Context/HiddenTokenContext';
 
 function FilteredOutput({ output }: { output: { str: string }[] }) {
 
-
+  // Read in context from HiddenTokenContext
   const {
     hideParentheses,
     hideSquareBrackets,
@@ -34,6 +34,19 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
     [hideParentheses, hideSquareBrackets, hideDoubleQuotes, hideSingleQuotes, hideUnderscores, hideStartEnd]
   );
 
+  // Key resets internal state of CachedOutput when changes
+  return (
+    <CachedOutput key={filterList.toString()} {...{ output, filterList }} />
+  );
+}
+
+function CachedOutput({ filterList, output }: { filterList: string[], output: { str: string }[] }) {
+  const [cache, setCache] = useState('');
+  const [cacheTokenLength, setCacheTokenLength] = useState(0);
+  const cacheInterval = 10;
+
+  const cacheBreakpoint = Math.floor(output.length / cacheInterval) * cacheInterval;
+
   // Function for transforming token into filtered token
   const applyFilterListToToken = useCallback((tk: string) => {
     if (!filterList.includes(tk.trim())) {
@@ -50,17 +63,7 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
     return tkList.map(o => applyFilterListToToken(o.str)).join('');
   }, [applyFilterListToToken]);
 
-  const [cache, setCache] = useState('');
-  const [cacheTokenLength, setCacheTokenLength] = useState(0);
-  const cacheInterval = 10;
 
-  const cacheBreakpoint = Math.floor(output.length / cacheInterval) * cacheInterval;
-
-  // Causes a recomputation of cache when the list of filtered tokens changes
-  useEffect(() => {
-    setCache('');
-    setCacheTokenLength(0);
-  }, [filterList]);
 
   const recache = useCallback((cacheTkLen: number, newCacheTkLen: number) => {
     if (cacheTkLen > newCacheTkLen) {
