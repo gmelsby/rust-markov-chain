@@ -45,6 +45,11 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
     }
   }, [filterList]);
 
+  // Function for transforming list of tokens into string of filtered tokens
+  const applyFilterListToTokenList = useCallback((tkList: { str: string }[]) => {
+    return tkList.map(o => applyFilterListToToken(o.str)).join('');
+  }, [applyFilterListToToken]);
+
   const [cache, setCache] = useState('');
   const [cacheTokenLength, setCacheTokenLength] = useState(0);
   const cacheInterval = 10;
@@ -59,14 +64,14 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
 
   const recache = useCallback((cacheTkLen: number, newCacheTkLen: number) => {
     if (cacheTkLen > newCacheTkLen) {
-      setCache(output.slice(0, newCacheTkLen).map(o => applyFilterListToToken(o.str)).join(''));
+      setCache(applyFilterListToTokenList(output.slice(0, newCacheTkLen)));
     } else if (cacheTkLen < newCacheTkLen) {
       setCache(c =>
-        [c, output.slice(cacheTkLen, newCacheTkLen).map(o => applyFilterListToToken(o.str)).join('')].join('')
+        [c, applyFilterListToTokenList(output.slice(cacheTkLen, newCacheTkLen))].join('')
       );
     }
     setCacheTokenLength(newCacheTkLen);
-  }, [applyFilterListToToken, output]);
+  }, [applyFilterListToTokenList, output]);
 
   // Re-caches when necessary 
   if (cacheBreakpoint !== cacheTokenLength) {
@@ -74,7 +79,7 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
   }
 
   return (
-    <p>{[cache, output.slice(cacheTokenLength).map(o => applyFilterListToToken(o.str)).join('')].join('')}</p>
+    <p>{[cache, applyFilterListToTokenList(output.slice(cacheTokenLength))].join('')}</p>
   );
 }
 
