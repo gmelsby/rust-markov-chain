@@ -1,7 +1,8 @@
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import HiddenTokenContext from '../Context/HiddenTokenContext';
 
 function FilteredOutput({ output }: { output: { str: string }[] }) {
+
 
   const {
     hideParentheses,
@@ -44,8 +45,36 @@ function FilteredOutput({ output }: { output: { str: string }[] }) {
     }
   }, [filterList]);
 
+  const [cache, setCache] = useState('');
+  const [cacheTokenLength, setCacheTokenLength] = useState(0);
+  const cacheInterval = 10;
+
+  const cacheBreakpoint = Math.floor(output.length / cacheInterval) * cacheInterval;
+
+  // Causes a recomputation of cache when the list of filtered tokens changes
+  useEffect(() => {
+    setCache('');
+    setCacheTokenLength(0);
+  }, [filterList]);
+
+  const recache = useCallback((cacheTkLen: number, newCacheTkLen: number) => {
+    if (cacheTkLen > newCacheTkLen) {
+      setCache(output.slice(0, newCacheTkLen).map(o => applyFilterListToToken(o.str)).join(''));
+    } else if (cacheTkLen < newCacheTkLen) {
+      setCache(c =>
+        [c, output.slice(cacheTkLen, newCacheTkLen).map(o => applyFilterListToToken(o.str)).join('')].join('')
+      );
+    }
+    setCacheTokenLength(newCacheTkLen);
+  }, [applyFilterListToToken, output]);
+
+  // Re-caches when necessary 
+  if (cacheBreakpoint !== cacheTokenLength) {
+    recache(cacheTokenLength, cacheBreakpoint);
+  }
+
   return (
-    <p>{output.map(o => applyFilterListToToken(o.str)).join('')}</p>
+    <p>{[cache, output.slice(cacheTokenLength).map(o => applyFilterListToToken(o.str)).join('')].join('')}</p>
   );
 }
 
