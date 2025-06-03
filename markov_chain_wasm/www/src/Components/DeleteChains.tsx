@@ -15,8 +15,8 @@ function DeleteChains() {
     [localChainList, localChainList.length]);
 
   return (
-    <div className='flex flex-col items-center'>
-      <h3 className='font-semibold my-3'>Delete chains from local storage</h3>
+    <div className='flex flex-col items-center m-3'>
+      <h3 className='font-semibold text-lg my-3'>Delete cached chains</h3>
       <div className='my-3'>
         <select
           disabled={localChainList.length === 0}
@@ -56,7 +56,7 @@ function DeleteChains() {
             await deleteAllIdbChains(chainVersion);
             setLastUpdated(Date.now());
           }}>
-          {localChainList.length === 0 ? 'No chains found in local storage' : 'Remove all chains from local storage'}
+          {localChainList.length === 0 ? 'No chains found in local browser storage' : 'Remove all chains from local browser storage'}
         </Button>
       </div>
     </div >

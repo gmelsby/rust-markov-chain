@@ -20,9 +20,9 @@ function Settings() {
         <button className="cursor-pointer" onClick={() => setOpen(true)}><MdSettings /></button>
       </IconContext.Provider>
       <Modal open={open} title='Settings' closeOnClickOut onClose={() => setOpen(false)}>
-        <div className='flex flex-col justify-around items-center grow overflow-auto'>
-          <DeleteChains />
+        <div className='flex flex-col justify-around items-center grow overflow-auto px-5'>
           <ToggleTokens />
+          <DeleteChains />
         </div>
       </Modal >
     </>
