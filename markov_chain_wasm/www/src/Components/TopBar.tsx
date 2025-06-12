@@ -17,14 +17,16 @@ function TopBar({
     >
       <div className="flex flex-row items-center justify-between h-full">
         <div
-          className={`mx-3 lg:mx-4 ${isAtTop ? "" : "cursor-pointer"}`}
+          className={`mx-3 lg:mx-4 flex flex-col sm:flex-row items-start sm:items-center ${isAtTop ? "" : "cursor-pointer"}`}
           onClick={
             isAtTop
               ? () => { }
               : () => window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
           }
         >
-          <h1 className="text-lg font-bold">Markov Chain</h1>
+          <h1 className="text-lg font-bold mr-4">YAMChA</h1>
+          <h2 className='text-xs sm:text-base font-bold text-neutral-400 whitespace-nowrap'>Yet Another Markov Chain Application</h2>
+
         </div>
         <div className="flex mx-3 lg:mx-4 gap-3">
           <Info />
