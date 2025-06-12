@@ -152,28 +152,30 @@ function ChainControlPanel({
           </div>
 
           <div className="m-2">
-            <Button
-              onClick={loaded ? resetChain : handleLoadChains}
-              disabled={selectedChains.length === 0}
-            >
-              {loaded ? (
-                "Reset Output"
-              ) : (
-                <div className="flex flex-row items-center">
-                  <p>Load Chains</p>
+            {selectedChains.length > 0 &&
+              <Button
+                onClick={loaded ? resetChain : handleLoadChains}
+                disabled={selectedChains.length === 0}
+              >
+                {loaded ? (
+                  "Reset Output"
+                ) : (
+                  <div className="flex flex-row items-center">
+                    <p>Load Chains</p>
 
-                  <IconContext.Provider
-                    value={{
-                      size: "25",
-                    }}
-                  >
-                    <MdOutlineArrowForward
-                      className={`ml-2 ${selectedChains.length ? "text-green-700" : ""}`}
-                    />
-                  </IconContext.Provider>
-                </div>
-              )}
-            </Button>
+                    <IconContext.Provider
+                      value={{
+                        size: "25",
+                      }}
+                    >
+                      <MdOutlineArrowForward
+                        className={`ml-2 ${selectedChains.length ? "text-green-700" : ""}`}
+                      />
+                    </IconContext.Provider>
+                  </div>
+                )}
+              </Button>
+            }
           </div>
         </div>
       </div>
