@@ -4,9 +4,10 @@ import SelectedChainDisplay from "./SelectedChainDisplay";
 import Button from "./Button";
 import AddChain from "./AddChain";
 import ProgressBar from "./ProgressBar";
-import { MdOutlineArrowForward } from "react-icons/md";
+import { MdOutlineArrowForward, MdOutlineCable } from "react-icons/md";
 import { IconContext } from "react-icons";
 import ChainContext from '../Context/ChainContext';
+import { MdOutlineTextSnippet } from 'react-icons/md';
 
 function ChainControlPanel({
   setMarkovChain,
@@ -109,6 +110,9 @@ function ChainControlPanel({
             rounded-br-full sm:rounded-tr-full rounded-tr-none sm:rounded-bl-none rounded-bl-full w-[calc(100%-1rem)] sm:w-8"
           >
             <div className="sm:[writing-mode:vertical-lr] sm:rotate-180 flex items-center justify-center">
+              <div className="sm:rotate-90 sm:mb-1 sm:mr-0 mr-1">
+                <MdOutlineTextSnippet />
+              </div>
               <p className="text-neutral-300 font-bold">Chains</p>
             </div>
           </div>
@@ -136,7 +140,13 @@ function ChainControlPanel({
           </div>
         </div>
         <div className="flex flex-col items-center justify-around border-2 rounded-2xl border-neutral-500/60 bg-neutral-700/85 p-3 m-4 min-h-50 grow sm:grow-0">
-          <h3 className="font-bold m-2">Controls</h3>
+          <div className="flex flex-row align-middle">
+            <div className="flex flex-col justify-center">
+              <MdOutlineCable />
+            </div>
+            <h3 className="font-bold mx-1 my-2">Controls</h3>
+          </div>
+
           <div className="flex flex-row items-center m-2">
             <div className="h-12 flex flex-row items-center px-3 rounded-tl-md rounded-bl-md bg-neutral-950 border-2 border-neutral-950">
               <h3 className="font-medium">N-gram Length:</h3>
