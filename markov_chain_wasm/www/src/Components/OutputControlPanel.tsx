@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { WasmMarkovChain, Token } from 'markov_chain_wasm';
 import WordButtons from './WordButtons';
 import Button from './Button';
-import { MdArrowDownward, MdFastForward, MdOutlineBackspace, MdPause, MdPlayArrow, MdRefresh } from 'react-icons/md';
+import { MdArrowDownward, MdFastForward, MdOutlineBackspace, MdPause, MdPlayArrow, MdShuffle } from 'react-icons/md';
 
 function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loaded, choices, autoScroll, setAutoScroll }:
   {
@@ -191,7 +191,7 @@ function OutputControlPanel({ markovChain, ngramLength, output, setOutput, loade
                 disabled={(wordButtonList.length !== choices && output.length > 0) || generating}
                 onClick={handleRefresh}
               >
-                <MdRefresh />
+                <MdShuffle />
               </Button>
 
               <Button

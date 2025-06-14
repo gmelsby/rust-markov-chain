@@ -117,7 +117,7 @@ function ChainControlPanel({
           </div>
 
           <div className="flex flex-wrap shrink grow mx-2 min-w-0">
-            <div className="flex flex-col justify-evenly items-center m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl
+            <div className="flex flex-col justify-evenly items-center m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800 border-solid rounded-2xl
             min-h-40 min-w-30 sm:m-4 my-1.5 mx-1 sm:mx-2 grow lg:grow-0 lg:max-w-xs
             ">
 
