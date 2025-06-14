@@ -7,7 +7,6 @@ import ProgressBar from "./ProgressBar";
 import { MdOutlineArrowForward, MdOutlineCable } from "react-icons/md";
 import { IconContext } from "react-icons";
 import ChainContext from '../Context/ChainContext';
-import { MdOutlineTextSnippet } from 'react-icons/md';
 
 function ChainControlPanel({
   setMarkovChain,
@@ -111,13 +110,27 @@ function ChainControlPanel({
           >
             <div className="sm:[writing-mode:vertical-lr] sm:rotate-180 flex items-center justify-center">
               <div className="sm:rotate-90 sm:mb-1 sm:mr-0 mr-1">
-                <MdOutlineTextSnippet />
+                <MdOutlineCable />
               </div>
-              <p className="text-neutral-300 font-bold">Chains</p>
+              <p className="text-neutral-300 font-bold">Controls</p>
             </div>
           </div>
 
           <div className="flex flex-wrap shrink grow mx-2 min-w-0">
+            <div className="flex flex-col justify-evenly items-center m-2 p-2 border-2 border-neutral-800/80 bg-neutral-800/60 border-solid rounded-2xl
+            min-h-40 min-w-30 sm:m-4 my-1.5 mx-1 sm:mx-2 grow lg:grow-0 lg:max-w-xs
+            ">
+
+              <h3 className="font-bold mx-1 my-2">N-gram Length</h3>
+              <select
+                className="mr-1 h-12 items-center justify-center rounded-md bg-neutral-950/70 px-3 border-2 border-neutral-950 font-bold text-neutral-50 hover:bg-blue-950 cursor-pointer"
+                value={ngramLength}
+                onChange={(e) => setNgramLength(Number(e.target.value))}
+              >
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
             {selectedChains.map((c, i) => (
               <SelectedChainDisplay
                 chain={c}
@@ -140,32 +153,10 @@ function ChainControlPanel({
           </div>
         </div>
         <div className="flex flex-col items-center justify-around border-2 rounded-2xl border-neutral-500/60 bg-neutral-700/85 p-3 m-4 min-h-50 grow sm:grow-0">
-          <div className="flex flex-row align-middle">
-            <div className="flex flex-col justify-center">
-              <MdOutlineCable />
-            </div>
-            <h3 className="font-bold mx-1 my-2">Controls</h3>
-          </div>
-
-          <div className="flex flex-row items-center m-2">
-            <div className="h-12 flex flex-row items-center px-3 rounded-tl-md rounded-bl-md bg-neutral-950 border-2 border-neutral-950">
-              <h3 className="font-medium">N-gram Length:</h3>
-            </div>
-            <select
-              className="mr-1 h-12 items-center justify-center rounded-br-md rounded-tr-md bg-neutral-950/70 px-3 border-2 border-neutral-950 font-bold text-neutral-50 hover:bg-blue-950 cursor-pointer"
-              value={ngramLength}
-              onChange={(e) => setNgramLength(Number(e.target.value))}
-            >
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-
           <div className="m-2">
             {selectedChains.length > 0 &&
               <Button
                 onClick={loaded ? resetChain : handleLoadChains}
-                disabled={selectedChains.length === 0}
               >
                 {loaded ? (
                   "Reset Output"
@@ -189,7 +180,7 @@ function ChainControlPanel({
           </div>
         </div>
       </div>
-      <div className="">
+      <div>
         <ProgressBar
           stepCount={selectedChains.length}
           currentStep={loadedChainList.length}
