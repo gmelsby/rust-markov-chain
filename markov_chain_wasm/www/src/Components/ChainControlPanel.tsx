@@ -173,7 +173,7 @@ function ChainControlPanel({
                 <div className="flex flex-row items-center">
                   <IconContext.Provider
                     value={{
-                      size: "50",
+                      size: "45",
                     }}
                   >
                     {loaded ? <MdRefresh /> : <MdOutlinePlayCircle />}
@@ -181,7 +181,7 @@ function ChainControlPanel({
                 </div>}
             </div>
             <div>
-              {selectedChains.length !== 0 && <h3 className='font-bold'>{loaded ? 'Reset Output' : 'Let\'s Go!'}</h3>}
+              {selectedChains.length !== 0 && <h3 className='text-sm font-bold'>{loaded ? 'Reset Output' : 'Let\'s Go!'}</h3>}
             </div>
           </div>
         </div>
