@@ -1,10 +1,9 @@
 import { WasmMarkovChain } from "markov_chain_wasm";
 import { useState, useEffect, useContext } from "react";
 import SelectedChainDisplay from "./SelectedChainDisplay";
-import Button from "./Button";
 import AddChain from "./AddChain";
 import ProgressBar from "./ProgressBar";
-import { MdOutlineArrowForward, MdOutlineCable } from "react-icons/md";
+import { MdOutlineCable, MdOutlinePlayCircle, MdRefresh } from "react-icons/md";
 import { IconContext } from "react-icons";
 import ChainContext from '../Context/ChainContext';
 
@@ -152,31 +151,38 @@ function ChainControlPanel({
             />
           </div>
         </div>
-        <div className="flex flex-col items-center justify-around border-2 rounded-2xl border-neutral-500/60 bg-neutral-700/85 p-3 m-4 min-h-50 grow sm:grow-0">
-          <div className="m-2">
-            {selectedChains.length > 0 &&
-              <Button
-                onClick={loaded ? resetChain : handleLoadChains}
-              >
-                {loaded ? (
-                  "Reset Output"
-                ) : (
-                  <div className="flex flex-row items-center">
-                    <p>Load Chains</p>
-
-                    <IconContext.Provider
-                      value={{
-                        size: "25",
-                      }}
-                    >
-                      <MdOutlineArrowForward
-                        className={`ml-2 ${selectedChains.length ? "text-green-700" : ""}`}
-                      />
-                    </IconContext.Provider>
-                  </div>
-                )}
-              </Button>
+        <div className="flex items-center justify-around border-2 rounded-2xl
+         border-neutral-500/60 bg-neutral-700/85 m-4 min-h-50 min-w-45 grow sm:grow-0"
+        >
+          <div className={`items-center justify-around border-2 rounded-2xl
+          bg-neutral-800/60 min-h-45 min-w-40 m-4 flex flex-col grow
+          border-neutral-800/80
+          ${selectedChains.length === 0 ? '' : 'hover:cursor-pointer hover:bg-neutral-800/85'}
+           `}
+            onClick={
+              selectedChains.length === 0 ? () => { } :
+                loaded ? resetChain : handleLoadChains
             }
+
+          >
+            <div></div>
+            <div className="m-2">
+              {selectedChains.length === 0 ?
+                <h3 className="max-w-35 text-center">Add a chain in the Controls box to get started.</h3>
+                :
+                <div className="flex flex-row items-center">
+                  <IconContext.Provider
+                    value={{
+                      size: "50",
+                    }}
+                  >
+                    {loaded ? <MdRefresh /> : <MdOutlinePlayCircle />}
+                  </IconContext.Provider>
+                </div>}
+            </div>
+            <div>
+              {selectedChains.length !== 0 && <h3 className='font-bold'>{loaded ? 'Reset Output' : 'Let\'s Go!'}</h3>}
+            </div>
           </div>
         </div>
       </div>
